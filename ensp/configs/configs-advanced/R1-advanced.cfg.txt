@@ -1,0 +1,73 @@
+system-view
+sysname R1
+# ================= IPv6 基础 =================
+ipv6
+ospfv3 1
+ router-id 10.255.255.1
+quit
+interface GigabitEthernet0/0/1
+ ipv6 enable
+ ipv6 address 2001:DB8:12::1/64
+ ospfv3 1 area 0.0.0.0
+quit
+interface LoopBack0
+ ipv6 enable
+ ipv6 address 2001:DB8:255::1/128
+ ospfv3 1 area 0.0.0.0
+quit
+# ================= 路由策略（prefix + route-policy） =================
+ip ip-prefix P_LAN index 10 permit 10.10.0.0 16 less-equal 24
+ip ip-prefix P_SERVER index 10 permit 10.10.40.0 24
+ip ip-prefix P_TEST index 10 permit 10.99.0.0 24
+route-policy RP_BGP_EXPORT permit node 10
+ if-match ip-prefix P_LAN
+ apply cost 100
+quit
+route-policy RP_BGP_EXPORT deny node 20
+quit
+route-policy RP_STATIC permit node 10
+ if-match ip-prefix P_TEST
+ apply cost 200
+quit
+ospf 1
+ import-route static route-policy RP_STATIC
+quit
+# ================= 策略路由（PBR：办公网走 R2 出口） =================
+acl number 3010
+ rule 5 permit ip source 10.10.20.0 0.0.0.255 destination 203.0.113.0 0.0.0.255
+quit
+traffic classifier CLASS_OFFICE operator and
+ if-match acl 3010
+quit
+traffic behavior BEH_VIA_R2
+ redirect ip-nexthop 10.0.2.2
+quit
+traffic policy PBR_OFFICE
+ classifier CLASS_OFFICE behavior BEH_VIA_R2
+quit
+interface GigabitEthernet0/0/2
+ traffic-policy PBR_OFFICE inbound
+quit
+# ================= BGP（AS 65001 ↔ AS 65002） =================
+bgp 65001
+ router-id 10.255.255.1
+ peer 10.0.2.2 as-number 65002
+ ipv4-family unicast
+  network 10.10.20.0 255.255.255.0
+  network 10.10.30.0 255.255.255.0
+  peer 10.0.2.2 enable
+  peer 10.0.2.2 route-policy RP_BGP_EXPORT export
+ quit
+quit
+return
+# ================= 验证 =================
+display bgp peer
+display bgp routing-table
+display ipv6 interface brief
+display ospfv3 peer
+display ip ip-prefix
+display route-policy
+display traffic policy user-defined
+display traffic classifier user-defined
+display acl 3010
+save

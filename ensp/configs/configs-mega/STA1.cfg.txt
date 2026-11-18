@@ -1,0 +1,1 @@
+# STA1 为无线终端，在 eNSP 界面连接 LAB-WLAN 并 DHCP 取址

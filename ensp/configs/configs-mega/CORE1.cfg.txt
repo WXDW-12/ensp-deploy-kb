@@ -1,0 +1,93 @@
+system-view
+sysname CORE1
+vlan batch 10 20 30 40 99
+stp mode mstp
+stp region-configuration
+region-name MEGA
+revision-level 1
+instance 1 vlan 10 20
+instance 2 vlan 30 40
+active region-configuration
+quit
+stp instance 1 root primary
+stp instance 2 root secondary
+interface Vlanif10
+ip address 10.10.10.2 10.10.10.0 255.255.255.0
+quit
+interface Vlanif20
+ip address 10.10.20.2 255.255.255.0
+dhcp select global
+vrrp vrid 20 virtual-ip 10.10.20.1
+vrrp vrid 20 priority 120
+vrrp vrid 20 preempt-mode timer delay 20
+quit
+interface Vlanif30
+ip address 10.10.30.2 255.255.255.0
+dhcp select global
+vrrp vrid 30 virtual-ip 10.10.30.1
+vrrp vrid 30 priority 120
+vrrp vrid 30 preempt-mode timer delay 20
+quit
+interface Vlanif40
+ip address 10.10.40.2 255.255.255.0
+dhcp select global
+vrrp vrid 40 virtual-ip 10.10.40.1
+vrrp vrid 40 priority 120
+vrrp vrid 40 preempt-mode timer delay 20
+quit
+interface Vlanif99
+ip address 10.0.4.2 255.255.255.0
+quit
+dhcp enable
+ip pool VLAN20
+network 10.10.20.0 mask 255.255.255.0
+gateway-list 10.10.20.1
+dns-list 114.114.114.114 8.8.8.8
+excluded-ip-address 10.10.20.2 10.10.20.9
+quit
+ip pool VLAN30
+network 10.10.30.0 mask 255.255.255.0
+gateway-list 10.10.30.1
+dns-list 114.114.114.114 8.8.8.8
+excluded-ip-address 10.10.30.2 10.10.30.9
+quit
+ip pool VLAN40
+network 10.10.40.0 mask 255.255.255.0
+gateway-list 10.10.40.1
+dns-list 114.114.114.114 8.8.8.8
+excluded-ip-address 10.10.40.2 10.10.40.9
+quit
+ospf 1 router-id 10.10.10.2
+area 0.0.0.0
+network 10.10.0.0 0.0.255.255
+network 10.0.4.0 0.0.0.255
+quit
+quit
+interface GigabitEthernet0/0/1
+port link-type trunk
+port trunk allow-pass vlan 10 20 30 40
+quit
+interface GigabitEthernet0/0/2
+port link-type access
+port default vlan 99
+quit
+interface GigabitEthernet0/0/3
+port link-type trunk
+port trunk allow-pass vlan 10 20 30 40 99
+quit
+stelnet server enable
+aaa
+local-user admin password cipher Huawei@123
+local-user admin privilege level 15
+local-user admin service-type ssh
+quit
+user-interface vty 0 4
+authentication-mode aaa
+protocol inbound ssh
+user privilege level 15
+quit
+display stp brief
+display vrrp
+display ospf peer
+return
+save

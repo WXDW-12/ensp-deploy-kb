@@ -1,0 +1,27 @@
+ACC2
+system-view
+sysname ACC2
+vlan batch 20 30
+stp region-configuration
+ region-name RED8A
+ revision-level 1
+ instance 1 vlan 20
+ instance 2 vlan 30
+ active region-configuration
+quit
+interface GigabitEthernet0/0/24
+ port link-type trunk
+ port trunk allow-pass vlan 20 30
+quit
+interface GigabitEthernet0/0/23
+ port link-type trunk
+ port trunk allow-pass vlan 20 30
+quit
+interface GigabitEthernet0/0/10
+ port link-type access
+ port default vlan 30
+ stp edged-port enable
+quit
+return
+display stp brief
+save

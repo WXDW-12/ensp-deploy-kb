@@ -1,0 +1,50 @@
+system-view
+sysname R2
+# ================= IPv6 基础 =================
+ipv6
+ospfv3 1
+ router-id 10.255.255.2
+quit
+interface GigabitEthernet0/0/0
+ ipv6 enable
+ ipv6 address 2001:DB8:12::2/64
+ ospfv3 1 area 0.0.0.0
+quit
+interface LoopBack0
+ ipv6 enable
+ ipv6 address 2001:DB8:255::2/128
+ ospfv3 1 area 0.0.0.0
+quit
+# ================= 模拟互联网网段 =================
+interface LoopBack1
+ ip address 203.0.113.10 255.255.255.0
+quit
+interface LoopBack2
+ ip address 198.51.100.2 255.255.255.0
+quit
+# ================= 路由策略：入方向过滤服务器网段 =================
+ip ip-prefix P_SERVER index 10 permit 10.10.40.0 24
+route-policy RP_BGP_IMPORT deny node 10
+ if-match ip-prefix P_SERVER
+quit
+route-policy RP_BGP_IMPORT permit node 20
+quit
+# ================= BGP（AS 65002 模拟运营商） =================
+bgp 65002
+ router-id 10.255.255.2
+ peer 10.0.2.1 as-number 65001
+ ipv4-family unicast
+  network 198.51.100.0 255.255.255.0
+  peer 10.0.2.1 enable
+  peer 10.0.2.1 route-policy RP_BGP_IMPORT import
+ quit
+quit
+return
+# ================= 验证 =================
+display bgp peer
+display bgp routing-table
+display ipv6 interface brief
+display ospfv3 peer
+display ip routing-table 203.0.113.10
+display route-policy
+save

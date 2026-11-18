@@ -1,0 +1,111 @@
+# 5B 与核心持久性实测（8A） 2026-11-18
+## LSW1 save + reboot + 服务恢复
+﻿LSW1 display saved-configuration | include vlan
+    display saved-configuration | include vlan
+    <LSW1>
+LSW1 display saved-configuration | include Vlanif
+    display saved-configuration | include Vlanif
+    <LSW1>
+reboot sent: reboot
+AFTER display vlan
+    TG:GE0/0/2(U)
+    20   common  TG:GE0/0/2(U)
+    VID  Status  Property      MAC-LRN Statistics Description
+    --------------------------------------------------------------------------------
+    1    enable  default       enable  disable    VLAN 0001
+    10   enable  default       enable  disable    VLAN 0010
+    20   enable  default       enable  disable    VLAN 0020
+    <LSW1>
+AFTER display ip interface brief
+    The number of interface that is DOWN in Protocol is 2
+    Interface                         IP Address/Mask      Physical   Protocol
+    MEth0/0/1                         unassigned           down       down
+    NULL0                             unassigned           up         up(s)
+    Vlanif1                           unassigned           up         down
+    Vlanif10                          10.60.1.1/24         up         up
+    Vlanif20                          10.60.2.2/24         up         up
+    <LSW1>
+
+## LSW2 save + reboot
+﻿LSW1 err: []
+LSW2 err: []
+LSW2 reboot: reboot
+LSW2-AFTER display vlan
+    20   common  UT:GE0/0/10(U)
+    TG:GE0/0/2(U)
+    VID  Status  Property      MAC-LRN Statistics Description
+    --------------------------------------------------------------------------------
+    1    enable  default       enable  disable    VLAN 0001
+    10   enable  default       enable  disable    VLAN 0010
+    20   enable  default       enable  disable    VLAN 0020
+    <LSW2>
+LSW2-AFTER display ip interface brief
+    The number of interface that is DOWN in Protocol is 2
+    Interface                         IP Address/Mask      Physical   Protocol
+    MEth0/0/1                         unassigned           down       down
+    NULL0                             unassigned           up         up(s)
+    Vlanif1                           unassigned           up         down
+    Vlanif10                          10.60.1.2/24         up         up
+    Vlanif20                          10.60.2.1/24         up         up
+    <LSW2>
+LSW2-AFTER display ip routing-table
+    Destination/Mask    Proto   Pre  Cost      Flags NextHop         Interface
+    10.60.1.0/24  Direct  0    0           D   10.60.1.2       Vlanif10
+    10.60.1.2/32  Direct  0    0           D   127.0.0.1       Vlanif10
+    10.60.2.0/24  Direct  0    0           D   10.60.2.1       Vlanif20
+    10.60.2.1/32  Direct  0    0           D   127.0.0.1       Vlanif20
+    127.0.0.0/8   Direct  0    0           D   127.0.0.1       InLoopBack0
+    127.0.0.1/32  Direct  0    0           D   127.0.0.1       InLoopBack0
+    <LSW2>
+
+## CORE1/CORE2 save + reboot（REDUNDANCY-8A-v2）
+
+### _core_persist.log
+﻿CORE1 lines=38 errors=0
+CORE2 lines=36 errors=0
+ACC1  lines=26 errors=0
+ACC2  lines=26 errors=0
+BEFORE CORE1 ['20    Master       Vlanif20                 Normal   10.10.20.1', '30    Master       Vlanif30                 Normal   10.10.30.1', 'Total:2     Master:2     Backup:0     Non-active:0']
+BEFORE CORE2 ['20    Backup       Vlanif20                 Normal   10.10.20.1', '30    Backup       Vlanif30                 Normal   10.10.30.1', 'Total:2     Master:0     Backup:2     Non-active:0']
+CORE1 reboot: reboot
+AFTER-REBOOT CORE1
+    20    Master       Vlanif20                 Normal   10.10.20.1
+    30    Master       Vlanif30                 Normal   10.10.30.1
+    Total:2     Master:2     Backup:0     Non-active:0
+   stp: 1    GigabitEthernet0/0/3        DESI  FORWARDING      NONE
+   stp: 2    GigabitEthernet0/0/1        DESI  FORWARDING      NONE
+   stp: 2    GigabitEthernet0/0/2        DESI  FORWARDING      NONE
+   stp: 2    GigabitEthernet0/0/3        DESI  FORWARDING      NONE
+AFTER-REBOOT CORE2
+    20    Backup       Vlanif20                 Normal   10.10.20.1
+    30    Backup       Vlanif30                 Normal   10.10.30.1
+    Total:2     Master:0     Backup:2     Non-active:0
+   stp: 1    GigabitEthernet0/0/3        ROOT  FORWARDING      NONE
+   stp: 2    GigabitEthernet0/0/1        DESI  FORWARDING      NONE
+   stp: 2    GigabitEthernet0/0/2        DESI  FORWARDING      NONE
+   stp: 2    GigabitEthernet0/0/3        ROOT  FORWARDING      NONE
+
+### _core_persist2.log
+﻿CORE2 reboot: reboot
+FINAL CORE1
+    20    Master       Vlanif20                 Normal   10.10.20.1
+    30    Master       Vlanif30                 Normal   10.10.30.1
+    Total:2     Master:2     Backup:0     Non-active:0
+   stp: 2    GigabitEthernet0/0/1        DESI  FORWARDING      NONE
+   stp: 2    GigabitEthernet0/0/2        DESI  FORWARDING      NONE
+   stp: 2    GigabitEthernet0/0/3        DESI  FORWARDING      NONE
+FINAL CORE2
+    20    Backup       Vlanif20                 Normal   10.10.20.1
+    30    Backup       Vlanif30                 Normal   10.10.30.1
+    Total:2     Master:0     Backup:2     Non-active:0
+   stp: 2    GigabitEthernet0/0/1        DESI  FORWARDING      NONE
+   stp: 2    GigabitEthernet0/0/2        DESI  FORWARDING      NONE
+   stp: 2    GigabitEthernet0/0/3        ROOT  FORWARDING      NONE
+
+### _acc_persist.log
+﻿ACC1 reboot: reboot
+ACC2 reboot: reboot
+ACC1 after reboot vlans: ['1    common  UT:GE0/0/1(D)      GE0/0/2(D)      GE0/0/3(D)      GE0/0/4(D)', '20   common  UT:GE0/0/10(U)', '30   common  TG:GE0/0/23(U)     GE0/0/24(U)']
+ACC1 uplink: ['GigabitEthernet0/0/24 current state : UP']
+ACC2 after reboot vlans: ['1    common  UT:GE0/0/1(D)      GE0/0/2(D)      GE0/0/3(D)      GE0/0/4(D)', '20   common  TG:GE0/0/23(U)     GE0/0/24(U)', '30   common  UT:GE0/0/10(U)']
+ACC2 uplink: ['GigabitEthernet0/0/24 current state : UP']

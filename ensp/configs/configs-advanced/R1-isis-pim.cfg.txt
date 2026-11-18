@@ -1,0 +1,32 @@
+system-view
+sysname R1
+# ================= IS-IS（Level-2，NET 49.0001.0000.0000.0001.00） =================
+isis 1
+ is-level level-2
+ network-entity 49.0001.0000.0000.0001.00
+quit
+interface GigabitEthernet0/0/1
+ isis enable 1
+quit
+interface LoopBack0
+ isis enable 1
+quit
+# ================= 组播：PIM-SM（R1 作为静态 RP） =================
+multicast routing-enable
+pim
+ static-rp 10.255.255.1
+quit
+interface GigabitEthernet0/0/1
+ pim sm
+quit
+interface LoopBack0
+ pim sm
+quit
+return
+# ================= 验证 =================
+display isis peer
+display isis lsdb
+display isis route
+display pim neighbor
+display pim routing-table
+save

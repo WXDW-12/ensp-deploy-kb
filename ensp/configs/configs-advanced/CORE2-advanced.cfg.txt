@@ -1,0 +1,22 @@
+system-view
+sysname CORE2
+# ================= IPv6 + OSPFv3 =================
+ipv6
+interface Vlanif10
+ ipv6 enable
+ ipv6 address 2001:DB8:10::3/64
+ ospfv3 1 area 0.0.0.0
+quit
+interface Vlanif20
+ ipv6 enable
+ ipv6 address 2001:DB8:20::3/64
+ ospfv3 1 area 0.0.0.0
+quit
+ospfv3 1
+ router-id 10.10.10.3
+quit
+return
+# ================= 验证 =================
+display ipv6 interface brief
+display ospfv3 peer
+save

@@ -1,0 +1,27 @@
+system-view
+sysname R1
+ipv6
+interface GigabitEthernet0/0/1
+ ip address 10.0.2.1 255.255.255.252
+ ipv6 enable
+quit
+# ===== 6to4 隧道（IPv4 10.0.2.1 -> 2002:0A00:0201::/48） =====
+interface Tunnel0/0/0
+ tunnel-protocol ipv6-ipv4 6to4
+ ipv6 enable
+ ipv6 address 2002:0A00:0201:1::1/64
+ source 10.0.2.1
+quit
+# ===== ISATAP 隧道 =====
+interface Tunnel0/0/1
+ tunnel-protocol ipv6-ipv4 isatap
+ ipv6 enable
+ ipv6 address 2001:DB8:12:1::5EFE:0A00:0201/64
+ source 10.0.2.1
+quit
+return
+display ipv6 interface brief
+display interface Tunnel0/0/0
+display interface Tunnel0/0/1
+display ipv6 routing-table
+save

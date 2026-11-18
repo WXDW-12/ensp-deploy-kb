@@ -1,0 +1,13 @@
+system-view
+sysname ACC2
+vlan batch 30 100
+interface GigabitEthernet0/0/24
+ port link-type trunk
+ port trunk allow-pass vlan 30 100
+quit
+interface GigabitEthernet0/0/20
+ port link-type access
+ port default vlan 100
+quit
+return
+save
