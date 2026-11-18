@@ -1,0 +1,35 @@
+system-view
+sysname CORE1
+# ================= IPv6 + OSPFv3 =================
+ipv6
+interface Vlanif10
+ ipv6 enable
+ ipv6 address 2001:DB8:10::2/64
+ ospfv3 1 area 0.0.0.0
+quit
+interface Vlanif20
+ ipv6 enable
+ ipv6 address 2001:DB8:20::2/64
+ ospfv3 1 area 0.0.0.0
+quit
+ospfv3 1
+ router-id 10.10.10.2
+quit
+# ================= 路由策略：外部路由打 cost 200 =================
+ip ip-prefix P_10_99 index 10 permit 10.99.0.0 24
+route-policy RP_EXPORT permit node 10
+ if-match ip-prefix P_10_99
+ apply cost 200
+quit
+ip route-static 10.99.0.0 255.255.255.0 NULL0
+ospf 1
+ import-route static route-policy RP_EXPORT
+quit
+return
+# ================= 验证 =================
+display ipv6 interface brief
+display ospfv3 peer
+display ip ip-prefix
+display route-policy
+display ospf lsdb ase 10.99.0.0
+save

@@ -1,0 +1,33 @@
+system-view
+sysname R1
+interface GigabitEthernet0/0/1
+ip address 10.0.2.1 255.255.255.252
+quit
+interface GigabitEthernet0/0/2
+ip address 10.0.3.1 255.255.255.252
+quit
+interface LoopBack0
+ip address 10.255.255.1 255.255.255.255
+quit
+ospf 1 router-id 10.255.255.1
+area 0.0.0.0
+network 10.0.2.0 0.0.0.3
+network 10.255.255.1 0.0.0.0
+quit
+quit
+ip route-static 10.10.0.0 255.255.0.0 10.0.3.2
+stelnet server enable
+aaa
+local-user admin password cipher Huawei@123
+local-user admin privilege level 15
+local-user admin service-type ssh
+quit
+user-interface vty 0 4
+authentication-mode aaa
+protocol inbound ssh
+user privilege level 15
+quit
+display ip routing-table
+display ospf peer
+return
+save

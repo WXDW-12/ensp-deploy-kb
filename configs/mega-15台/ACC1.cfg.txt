@@ -1,0 +1,38 @@
+system-view
+sysname ACC1
+vlan batch 10 20 30 40
+stp mode mstp
+stp region-configuration
+region-name MEGA
+revision-level 1
+instance 1 vlan 10 20
+instance 2 vlan 30 40
+active region-configuration
+quit
+interface Vlanif10
+ip address 10.10.10.11 10.10.10.0 255.255.255.0
+quit
+interface GigabitEthernet0/0/24
+port link-type trunk
+port trunk allow-pass vlan 10 20 30 40
+quit
+interface GigabitEthernet0/0/10
+port link-type access
+port default vlan 20
+stp edged-port enable
+quit
+stelnet server enable
+aaa
+local-user admin password cipher Huawei@123
+local-user admin privilege level 15
+local-user admin service-type ssh
+quit
+user-interface vty 0 4
+authentication-mode aaa
+protocol inbound ssh
+user privilege level 15
+quit
+display stp brief
+display vlan
+return
+save

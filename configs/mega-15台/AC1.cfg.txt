@@ -1,0 +1,80 @@
+system-view
+sysname AC1
+vlan batch 30 100
+stp mode mstp
+stp region-configuration
+region-name MEGA
+revision-level 1
+instance 1 vlan 10 20
+instance 2 vlan 30 40
+active region-configuration
+quit
+interface Vlanif100
+ip address 10.10.100.2 255.255.255.0
+vrrp vrid 100 virtual-ip 10.10.100.1
+vrrp vrid 100 priority 120
+vrrp vrid 100 preempt-mode timer delay 20
+dhcp select global
+quit
+dhcp enable
+ip pool AP
+network 10.10.100.0 mask 255.255.255.0
+gateway-list 10.10.100.1
+option 43 sub-option 2 ip-address 10.10.100.1
+excluded-ip-address 10.10.100.2 10.10.100.9
+quit
+capwap source interface Vlanif100
+wlan
+security-profile name LAB
+security wpa-wpa2 psk pass-phrase Huawei@123 aes
+quit
+ssid-profile name LAB
+ssid LAB-WLAN
+quit
+vap-profile name LAB
+service-vlan vlan-id 30
+ssid-profile LAB
+security-profile LAB
+quit
+ap-group name LAB
+vap-profile LAB wlan 1 radio all
+quit
+ap auth-mode no-auth
+ap-group name default
+vap-profile LAB wlan 1 radio all
+quit
+quit
+interface GigabitEthernet0/0/1
+port link-type trunk
+port trunk allow-pass vlan 30 100
+quit
+interface GigabitEthernet0/0/2
+port link-type trunk
+port trunk allow-pass vlan 30 100
+quit
+interface GigabitEthernet0/0/3
+port link-type trunk
+port trunk pvid vlan 100
+port trunk allow-pass vlan 30 100
+quit
+interface GigabitEthernet0/0/4
+port link-type trunk
+port trunk pvid vlan 100
+port trunk allow-pass vlan 30 100
+quit
+stelnet server enable
+aaa
+local-user admin password irreversible-cipher Huawei@123
+local-user admin privilege level 15
+local-user admin service-type ssh
+quit
+user-interface vty 0 4
+authentication-mode aaa
+protocol inbound ssh
+user privilege level 15
+quit
+display vrrp
+display ap all
+display vap ssid LAB-WLAN
+return
+save

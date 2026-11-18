@@ -1,0 +1,40 @@
+# 8A-3 第二轮 WLAN 实验（WLAN-ROAM-8A）
+拓扑：AC1 + LSW1 + AP1 + AP2 + STA1；AC1 10.10.100.1；service-vlan 30；tunnel 转发
+
+## display ap all
+display ap all
+Info: This operation may take a few seconds. Please wait for a moment.done.
+Total AP information:
+nor  : normal          [1]
+----------------------------------------------------------------------------------------------------
+ID   MAC            Name           Group   IP            Type            State STA Uptime
+----------------------------------------------------------------------------------------------------
+0    00e0-fc72-1440 00e0-fc72-1440 default 10.10.100.110 AP6050DN        nor   0   2M:58S
+----------------------------------------------------------------------------------------------------
+Total: 1
+[AC1-wlan-vap-prof-LAB]
+[AC1-wlan-vap-prof-LAB]
+
+## display vap ssid all
+display vap ssid all
+Info: This operation may take a few seconds, please wait.
+WID : WLAN ID
+------------------------------------------------------------------------------------
+AP ID AP name        RfID WID  BSSID          Status  Auth type     STA   SSID
+------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------
+Total: 0
+[AC1-wlan-vap-prof-LAB]
+[AC1-wlan-vap-prof-LAB]
+
+## display station all
+display station all
+Rf/WLAN: Radio ID/WLAN ID
+Rx/Tx: link receive rate/link transmit rate(Mbps)
+--------------------------------------------------------------------------------------------------
+STA MAC          AP ID Ap name  Rf/WLAN  Band  Type  Rx/Tx      RSSI  VLAN  IP address  SSID
+--------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------
+Total: 0 2.4G: 0 5G: 0
+[AC1-wlan-vap-prof-LAB]
+[AC1-wlan-vap-prof-LAB]

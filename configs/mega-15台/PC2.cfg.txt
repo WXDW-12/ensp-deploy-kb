@@ -1,0 +1,1 @@
+# PC2 为有线终端，在 eNSP 界面选 DHCP，接入 ACC2 VLAN30

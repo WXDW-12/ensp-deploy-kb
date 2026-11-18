@@ -1,0 +1,1 @@
+# PC1 为有线终端，在 eNSP 界面选 DHCP，接入 ACC1 VLAN20

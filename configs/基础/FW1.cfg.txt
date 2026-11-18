@@ -1,0 +1,50 @@
+system-view
+sysname FW1
+interface GigabitEthernet0/0/0
+ip address 192.168.0.1 255.255.255.0
+service-manage https permit
+service-manage ssh permit
+service-manage ping permit
+quit
+interface GigabitEthernet1/0/0
+ip address 10.0.3.2 255.255.255.252
+quit
+interface GigabitEthernet1/0/1
+ip address 10.0.4.1 255.255.255.252
+quit
+firewall zone trust
+add interface GigabitEthernet1/0/1
+quit
+firewall zone untrust
+add interface GigabitEthernet1/0/0
+quit
+security-policy
+rule name TRUST_TO_UNTRUST
+source-zone trust
+destination-zone untrust
+action permit
+quit
+quit
+nat-policy
+rule name SNAT_OUT
+source-zone trust
+destination-zone untrust
+action source-nat easy-ip
+quit
+quit
+ospf 1 router-id 10.255.255.254
+area 0.0.0.0
+network 10.0.3.0 0.0.0.3
+network 10.0.4.0 0.0.0.3
+quit
+quit
+stelnet server enable
+user-interface vty 0 4
+authentication-mode aaa
+protocol inbound ssh
+quit
+display zone
+display security-policy rule all
+display nat-policy rule all
+return
+save

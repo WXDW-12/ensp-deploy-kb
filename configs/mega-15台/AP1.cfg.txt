@@ -1,0 +1,1 @@
+# AP1 为 FIT AP，由 AC1 通过 CAPWAP 下发配置，无本地 CLI 配置

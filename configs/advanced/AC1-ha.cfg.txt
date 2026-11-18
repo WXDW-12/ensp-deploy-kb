@@ -1,0 +1,35 @@
+system-view
+sysname AC1
+vlan batch 100 200
+interface GigabitEthernet0/0/1
+ port link-type trunk
+ port trunk allow-pass vlan 100 200
+quit
+interface Vlanif100
+ ip address 10.10.100.1 255.255.255.0
+ vrrp vrid 100 virtual-ip 10.10.100.254
+ vrrp vrid 100 priority 120
+ vrrp vrid 100 preempt-mode timer delay 20
+ dhcp select global
+quit
+interface Vlanif200
+ ip address 10.10.200.1 255.255.255.0
+quit
+dhcp enable
+ip pool AP
+ network 10.10.100.0 mask 255.255.255.0
+ gateway-list 10.10.100.254
+ option 43 sub-option 2 ip-address 10.10.100.254
+quit
+hsb-service 0
+ service-type access
+quit
+hsb-group 0
+ track vrrp vrid 100 interface Vlanif100
+ hsb binding peer-ip 10.10.200.2 vrrp vrid 100
+quit
+return
+display vrrp
+display hsb-group 0
+display hsb-service 0
+save

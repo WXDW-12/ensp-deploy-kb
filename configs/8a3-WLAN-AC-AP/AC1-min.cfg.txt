@@ -1,0 +1,40 @@
+system-view
+sysname AC1
+vlan batch 100
+dhcp enable
+interface GigabitEthernet0/0/1
+ port link-type access
+ port default vlan 100
+quit
+interface Vlanif100
+ ip address 10.10.100.1 255.255.255.0
+ dhcp select global
+quit
+ip pool WLAN
+ network 10.10.100.0 mask 255.255.255.0
+ gateway-list 10.10.100.1
+ option 43 sub-option 2 ip-address 10.10.100.1
+ excluded-ip-address 10.10.100.1 10.10.100.9
+quit
+capwap source interface Vlanif100
+wlan
+security-profile name LAB
+ security wpa-wpa2 psk pass-phrase Huawei@123 aes
+quit
+ssid-profile name LAB
+ ssid LAB-WLAN
+quit
+vap-profile name LAB
+ service-vlan vlan-id 100
+ ssid-profile LAB
+ security-profile LAB
+ forward-mode tunnel
+quit
+ap-group name default
+ vap-profile LAB wlan 1 radio all
+quit
+ap auth-mode no-auth
+quit
+return
+save
+y

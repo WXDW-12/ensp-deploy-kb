@@ -1,0 +1,17 @@
+system-view
+sysname LSW1
+vlan batch 100
+interface GigabitEthernet0/0/1
+ port link-type access
+ port default vlan 100
+quit
+interface GigabitEthernet0/0/2
+ port link-type access
+ port default vlan 100
+quit
+interface GigabitEthernet0/0/3
+ port link-type access
+ port default vlan 100
+quit
+return
+save

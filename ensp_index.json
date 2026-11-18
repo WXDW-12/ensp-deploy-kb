@@ -1,0 +1,1504 @@
+{
+  "generated_at": "2026-11-18T18:21:00+08:00",
+  "source_repo": "C:\\Users\\1\\Documents\\ChatGPT\\Net-Thesis-AI-Studio",
+  "source_commit": "fb706d46bb394d840689dfdf044542e07e676ee9",
+  "purpose": "eNSP 实测拓扑/配置/证据参考，供 NetAI 构建拓扑与配置推演使用",
+  "topologies": [
+    {
+      "file": "MEGA-Lab-live.topo",
+      "sha256": "bb3dc01f44ebef5b61dba0963933b30050b3cfc82013fad1384b11b335f7f399",
+      "bytes": 15664,
+      "devices": [
+        {
+          "name": "R1",
+          "model": "AR2220",
+          "com_port": "2000",
+          "note": "路由器，VBoxHeadline 虚拟机，控制台 2000+"
+        },
+        {
+          "name": "R2",
+          "model": "AR2220",
+          "com_port": "2001",
+          "note": "路由器，VBoxHeadline 虚拟机，控制台 2000+"
+        },
+        {
+          "name": "FW1",
+          "model": "USG6000V",
+          "com_port": "2002",
+          "note": "防火墙，只允许 USG6000；0/0/0 仅管理口；VRRP/HRP 语法与交换机不同"
+        },
+        {
+          "name": "FW2",
+          "model": "USG6000V",
+          "com_port": "2003",
+          "note": "防火墙，只允许 USG6000；0/0/0 仅管理口；VRRP/HRP 语法与交换机不同"
+        },
+        {
+          "name": "CORE1",
+          "model": "S5700",
+          "com_port": "2004",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "CORE2",
+          "model": "S5700",
+          "com_port": "2005",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "ACC1",
+          "model": "S5700",
+          "com_port": "2006",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "ACC2",
+          "model": "S5700",
+          "com_port": "2007",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "AC1",
+          "model": "AC6005",
+          "com_port": "2008",
+          "note": "无线控制器，VBox 虚拟机；本机镜像 VAP 不实例化（见 B12）"
+        },
+        {
+          "name": "AC2",
+          "model": "AC6005",
+          "com_port": "2009",
+          "note": "无线控制器，VBox 虚拟机；本机镜像 VAP 不实例化（见 B12）"
+        },
+        {
+          "name": "AP1",
+          "model": "AP6050",
+          "com_port": "2010",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "AP2",
+          "model": "AP6050",
+          "com_port": "2011",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "STA1",
+          "model": "STA",
+          "com_port": "2012",
+          "note": "无线终端，无 TCP 控制台，需 GUI 关联 SSID"
+        },
+        {
+          "name": "PC1",
+          "model": "PC",
+          "com_port": "2013",
+          "note": "eNSP PC 模拟器，无 TCP 控制台，只能 GUI；支持 ipconfig/ping/arp/tracert"
+        },
+        {
+          "name": "PC2",
+          "model": "PC",
+          "com_port": "2014",
+          "note": "eNSP PC 模拟器，无 TCP 控制台，只能 GUI；支持 ipconfig/ping/arp/tracert"
+        }
+      ],
+      "links": [
+        {
+          "src": "R1",
+          "src_index": 1,
+          "dst": "R2",
+          "dst_index": 0
+        },
+        {
+          "src": "R1",
+          "src_index": 2,
+          "dst": "FW1",
+          "dst_index": 1
+        },
+        {
+          "src": "R2",
+          "src_index": 1,
+          "dst": "FW2",
+          "dst_index": 1
+        },
+        {
+          "src": "FW1",
+          "src_index": 2,
+          "dst": "CORE1",
+          "dst_index": 1
+        },
+        {
+          "src": "FW2",
+          "src_index": 2,
+          "dst": "CORE2",
+          "dst_index": 1
+        },
+        {
+          "src": "FW1",
+          "src_index": 7,
+          "dst": "FW2",
+          "dst_index": 7
+        },
+        {
+          "src": "CORE1",
+          "src_index": 2,
+          "dst": "CORE2",
+          "dst_index": 2
+        },
+        {
+          "src": "CORE1",
+          "src_index": 0,
+          "dst": "ACC1",
+          "dst_index": 23
+        },
+        {
+          "src": "CORE2",
+          "src_index": 0,
+          "dst": "ACC2",
+          "dst_index": 23
+        },
+        {
+          "src": "ACC1",
+          "src_index": 9,
+          "dst": "PC1",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC2",
+          "src_index": 9,
+          "dst": "PC2",
+          "dst_index": 0
+        },
+        {
+          "src": "CORE2",
+          "src_index": 3,
+          "dst": "AC1",
+          "dst_index": 0
+        },
+        {
+          "src": "AC1",
+          "src_index": 1,
+          "dst": "AC2",
+          "dst_index": 1
+        },
+        {
+          "src": "AC1",
+          "src_index": 2,
+          "dst": "AP1",
+          "dst_index": 0
+        },
+        {
+          "src": "AC1",
+          "src_index": 3,
+          "dst": "AP2",
+          "dst_index": 0
+        }
+      ]
+    },
+    {
+      "file": "REDUNDANCY-8A-v2.topo",
+      "sha256": "07be8493994cd5b96d0cbad65b2981766b2b1ddcce4be01f024db7d6ab7b1def",
+      "bytes": 6707,
+      "devices": [
+        {
+          "name": "CORE1",
+          "model": "S5700",
+          "com_port": "2000",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "CORE2",
+          "model": "S5700",
+          "com_port": "2001",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "ACC1",
+          "model": "S5700",
+          "com_port": "2002",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "ACC2",
+          "model": "S5700",
+          "com_port": "2003",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "PC1",
+          "model": "PC",
+          "com_port": "2004",
+          "note": "eNSP PC 模拟器，无 TCP 控制台，只能 GUI；支持 ipconfig/ping/arp/tracert"
+        },
+        {
+          "name": "PC2",
+          "model": "PC",
+          "com_port": "2005",
+          "note": "eNSP PC 模拟器，无 TCP 控制台，只能 GUI；支持 ipconfig/ping/arp/tracert"
+        }
+      ],
+      "links": [
+        {
+          "src": "ACC1",
+          "src_index": 23,
+          "dst": "CORE1",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC1",
+          "src_index": 22,
+          "dst": "CORE2",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC2",
+          "src_index": 23,
+          "dst": "CORE1",
+          "dst_index": 1
+        },
+        {
+          "src": "ACC2",
+          "src_index": 22,
+          "dst": "CORE2",
+          "dst_index": 1
+        },
+        {
+          "src": "ACC1",
+          "src_index": 9,
+          "dst": "PC1",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC2",
+          "src_index": 9,
+          "dst": "PC2",
+          "dst_index": 0
+        },
+        {
+          "src": "CORE1",
+          "src_index": 2,
+          "dst": "CORE2",
+          "dst_index": 2
+        }
+      ]
+    },
+    {
+      "file": "WLAN-2AP.topo",
+      "sha256": "363c69348c53661b47058d3a0e0a383108d023d46383a4683ed44efab18b141b",
+      "bytes": 7380,
+      "devices": [
+        {
+          "name": "CORE1",
+          "model": "S5700",
+          "com_port": "2000",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "CORE2",
+          "model": "S5700",
+          "com_port": "2001",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "ACC1",
+          "model": "S5700",
+          "com_port": "2002",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "ACC2",
+          "model": "S5700",
+          "com_port": "2003",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "AC1",
+          "model": "AC6005",
+          "com_port": "2004",
+          "note": "无线控制器，VBox 虚拟机；本机镜像 VAP 不实例化（见 B12）"
+        },
+        {
+          "name": "AC2",
+          "model": "AC6005",
+          "com_port": "2005",
+          "note": "无线控制器，VBox 虚拟机；本机镜像 VAP 不实例化（见 B12）"
+        },
+        {
+          "name": "AP1",
+          "model": "AP6050",
+          "com_port": "2006",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "AP2",
+          "model": "AP6050",
+          "com_port": "2007",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "STA1",
+          "model": "STA",
+          "com_port": "2008",
+          "note": "无线终端，无 TCP 控制台，需 GUI 关联 SSID"
+        }
+      ],
+      "links": [
+        {
+          "src": "CORE1",
+          "src_index": 2,
+          "dst": "CORE2",
+          "dst_index": 2
+        },
+        {
+          "src": "CORE1",
+          "src_index": 3,
+          "dst": "CORE2",
+          "dst_index": 3
+        },
+        {
+          "src": "CORE1",
+          "src_index": 0,
+          "dst": "ACC1",
+          "dst_index": 23
+        },
+        {
+          "src": "CORE2",
+          "src_index": 0,
+          "dst": "ACC2",
+          "dst_index": 23
+        },
+        {
+          "src": "CORE2",
+          "src_index": 4,
+          "dst": "AC1",
+          "dst_index": 0
+        },
+        {
+          "src": "CORE1",
+          "src_index": 5,
+          "dst": "AC2",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC1",
+          "src_index": 19,
+          "dst": "AP1",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC2",
+          "src_index": 19,
+          "dst": "AP2",
+          "dst_index": 0
+        }
+      ]
+    },
+    {
+      "file": "WLAN-ROAM-8A.topo",
+      "sha256": "a20f89aa81b4043363aef7d781553eb390a6745228bd5f3de00ac072ef504b28",
+      "bytes": 3599,
+      "devices": [
+        {
+          "name": "AC1",
+          "model": "AC6005",
+          "com_port": "2000",
+          "note": "无线控制器，VBox 虚拟机；本机镜像 VAP 不实例化（见 B12）"
+        },
+        {
+          "name": "LSW1",
+          "model": "S5700",
+          "com_port": "2001",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "AP1",
+          "model": "AP6050",
+          "com_port": "2002",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "AP2",
+          "model": "AP6050",
+          "com_port": "2003",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "STA1",
+          "model": "STA",
+          "com_port": "2004",
+          "note": "无线终端，无 TCP 控制台，需 GUI 关联 SSID"
+        }
+      ],
+      "links": [
+        {
+          "src": "AC1",
+          "src_index": 0,
+          "dst": "LSW1",
+          "dst_index": 0
+        },
+        {
+          "src": "AP1",
+          "src_index": 0,
+          "dst": "LSW1",
+          "dst_index": 1
+        },
+        {
+          "src": "AP2",
+          "src_index": 0,
+          "dst": "LSW1",
+          "dst_index": 2
+        }
+      ]
+    },
+    {
+      "file": "5B-minimal.topo",
+      "sha256": "2e781440fb327579001743debdb28c4e54dbcc8d4a16d01ea971e00752c0a9d4",
+      "bytes": 6920,
+      "devices": [
+        {
+          "name": "PC1",
+          "model": "PC",
+          "com_port": "0",
+          "note": "eNSP PC 模拟器，无 TCP 控制台，只能 GUI；支持 ipconfig/ping/arp/tracert"
+        },
+        {
+          "name": "PC2",
+          "model": "PC",
+          "com_port": "0",
+          "note": "eNSP PC 模拟器，无 TCP 控制台，只能 GUI；支持 ipconfig/ping/arp/tracert"
+        },
+        {
+          "name": "LSW1",
+          "model": "S5700",
+          "com_port": "2000",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "LSW2",
+          "model": "S5700",
+          "com_port": "2001",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "CLOUD1",
+          "model": "Cloud",
+          "com_port": "0",
+          "note": "需要 Npcap 兼容模式；本机 WinPcapCompatible=0 不可用"
+        },
+        {
+          "name": "LSW3",
+          "model": "S5700",
+          "com_port": "2002",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        }
+      ],
+      "links": [
+        {
+          "src": "LSW1",
+          "src_index": 1,
+          "dst": "LSW2",
+          "dst_index": 1
+        },
+        {
+          "src": "LSW1",
+          "src_index": 9,
+          "dst": "PC1",
+          "dst_index": 0
+        },
+        {
+          "src": "LSW2",
+          "src_index": 9,
+          "dst": "PC2",
+          "dst_index": 0
+        },
+        {
+          "src": "LSW3",
+          "src_index": 0,
+          "dst": "CLOUD1",
+          "dst_index": 1
+        },
+        {
+          "src": "LSW1",
+          "src_index": 0,
+          "dst": "LSW3",
+          "dst_index": 1
+        },
+        {
+          "src": "LSW2",
+          "src_index": 0,
+          "dst": "LSW3",
+          "dst_index": 2
+        }
+      ]
+    },
+    {
+      "file": "HCIP-Advanced.topo",
+      "sha256": "5abfa630954df67b6ef84961d9fb53b68403f87e16b84b3f4c0fbfb2a1cf4a1a",
+      "bytes": 19440,
+      "devices": [
+        {
+          "name": "R1",
+          "model": "AR2220",
+          "com_port": "2000",
+          "note": "路由器，VBoxHeadline 虚拟机，控制台 2000+"
+        },
+        {
+          "name": "R2",
+          "model": "AR2220",
+          "com_port": "2001",
+          "note": "路由器，VBoxHeadline 虚拟机，控制台 2000+"
+        },
+        {
+          "name": "R3",
+          "model": "AR2220",
+          "com_port": "2002",
+          "note": "路由器，VBoxHeadline 虚拟机，控制台 2000+"
+        },
+        {
+          "name": "CORE1",
+          "model": "S5700",
+          "com_port": "2003",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "CORE2",
+          "model": "S5700",
+          "com_port": "2004",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "ACC1",
+          "model": "S5700",
+          "com_port": "2005",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "ACC2",
+          "model": "S5700",
+          "com_port": "2006",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "AC1",
+          "model": "AC6005",
+          "com_port": "2007",
+          "note": "无线控制器，VBox 虚拟机；本机镜像 VAP 不实例化（见 B12）"
+        },
+        {
+          "name": "AC2",
+          "model": "AC6005",
+          "com_port": "2008",
+          "note": "无线控制器，VBox 虚拟机；本机镜像 VAP 不实例化（见 B12）"
+        },
+        {
+          "name": "AP1",
+          "model": "AP6050",
+          "com_port": "2009",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "AP2",
+          "model": "AP6050",
+          "com_port": "2010",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "STA1",
+          "model": "STA",
+          "com_port": "2011",
+          "note": "无线终端，无 TCP 控制台，需 GUI 关联 SSID"
+        },
+        {
+          "name": "PC1",
+          "model": "PC",
+          "com_port": "2012",
+          "note": "eNSP PC 模拟器，无 TCP 控制台，只能 GUI；支持 ipconfig/ping/arp/tracert"
+        },
+        {
+          "name": "PC2",
+          "model": "PC",
+          "com_port": "2013",
+          "note": "eNSP PC 模拟器，无 TCP 控制台，只能 GUI；支持 ipconfig/ping/arp/tracert"
+        },
+        {
+          "name": "FW1",
+          "model": "USG6000V",
+          "com_port": "2014",
+          "note": "防火墙，只允许 USG6000；0/0/0 仅管理口；VRRP/HRP 语法与交换机不同"
+        },
+        {
+          "name": "AP3",
+          "model": "AP6050",
+          "com_port": "2015",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "AP4",
+          "model": "AP6050",
+          "com_port": "2016",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "AP5",
+          "model": "AP6050",
+          "com_port": "2017",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "AP6",
+          "model": "AP6050",
+          "com_port": "2018",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        }
+      ],
+      "links": [
+        {
+          "src": "R1",
+          "src_index": 1,
+          "dst": "R2",
+          "dst_index": 1
+        },
+        {
+          "src": "R1",
+          "src_index": 2,
+          "dst": "CORE1",
+          "dst_index": 1
+        },
+        {
+          "src": "R2",
+          "src_index": 2,
+          "dst": "CORE2",
+          "dst_index": 1
+        },
+        {
+          "src": "R3",
+          "src_index": 0,
+          "dst": "R1",
+          "dst_index": 0
+        },
+        {
+          "src": "R3",
+          "src_index": 1,
+          "dst": "R2",
+          "dst_index": 0
+        },
+        {
+          "src": "CORE1",
+          "src_index": 2,
+          "dst": "CORE2",
+          "dst_index": 2
+        },
+        {
+          "src": "CORE1",
+          "src_index": 3,
+          "dst": "CORE2",
+          "dst_index": 3
+        },
+        {
+          "src": "CORE1",
+          "src_index": 6,
+          "dst": "FW1",
+          "dst_index": 1
+        },
+        {
+          "src": "FW1",
+          "src_index": 0,
+          "dst": "R3",
+          "dst_index": 2
+        },
+        {
+          "src": "CORE1",
+          "src_index": 0,
+          "dst": "ACC1",
+          "dst_index": 23
+        },
+        {
+          "src": "CORE2",
+          "src_index": 0,
+          "dst": "ACC2",
+          "dst_index": 23
+        },
+        {
+          "src": "CORE2",
+          "src_index": 4,
+          "dst": "AC1",
+          "dst_index": 0
+        },
+        {
+          "src": "CORE1",
+          "src_index": 5,
+          "dst": "AC2",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC1",
+          "src_index": 19,
+          "dst": "AP1",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC2",
+          "src_index": 19,
+          "dst": "AP2",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC1",
+          "src_index": 20,
+          "dst": "AP3",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC2",
+          "src_index": 20,
+          "dst": "AP4",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC1",
+          "src_index": 21,
+          "dst": "AP5",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC2",
+          "src_index": 21,
+          "dst": "AP6",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC1",
+          "src_index": 9,
+          "dst": "PC1",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC2",
+          "src_index": 9,
+          "dst": "PC2",
+          "dst_index": 0
+        }
+      ]
+    },
+    {
+      "file": "A-Full.topo",
+      "sha256": "93c90d43f98faeab2f07a83c572e67c1931a992e117d91f07c45c609bb347977",
+      "bytes": 11843,
+      "devices": [
+        {
+          "name": "R1",
+          "model": "AR2220",
+          "com_port": "2000",
+          "note": "路由器，VBoxHeadline 虚拟机，控制台 2000+"
+        },
+        {
+          "name": "R2",
+          "model": "AR2220",
+          "com_port": "2001",
+          "note": "路由器，VBoxHeadline 虚拟机，控制台 2000+"
+        },
+        {
+          "name": "FW1",
+          "model": "USG6000V",
+          "com_port": "2002",
+          "note": "防火墙，只允许 USG6000；0/0/0 仅管理口；VRRP/HRP 语法与交换机不同"
+        },
+        {
+          "name": "CORE1",
+          "model": "S5700",
+          "com_port": "2003",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "CORE2",
+          "model": "S5700",
+          "com_port": "2004",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "ACC1",
+          "model": "S5700",
+          "com_port": "2005",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "ACC2",
+          "model": "S5700",
+          "com_port": "2006",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "AC1",
+          "model": "AC6005",
+          "com_port": "2007",
+          "note": "无线控制器，VBox 虚拟机；本机镜像 VAP 不实例化（见 B12）"
+        },
+        {
+          "name": "AP1",
+          "model": "AP6050",
+          "com_port": "2008",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "STA1",
+          "model": "STA",
+          "com_port": "2009",
+          "note": "无线终端，无 TCP 控制台，需 GUI 关联 SSID"
+        },
+        {
+          "name": "PC1",
+          "model": "PC",
+          "com_port": "2010",
+          "note": "eNSP PC 模拟器，无 TCP 控制台，只能 GUI；支持 ipconfig/ping/arp/tracert"
+        },
+        {
+          "name": "PC2",
+          "model": "PC",
+          "com_port": "2011",
+          "note": "eNSP PC 模拟器，无 TCP 控制台，只能 GUI；支持 ipconfig/ping/arp/tracert"
+        }
+      ],
+      "links": [
+        {
+          "src": "R1",
+          "src_index": 1,
+          "dst": "R2",
+          "dst_index": 0
+        },
+        {
+          "src": "R1",
+          "src_index": 2,
+          "dst": "FW1",
+          "dst_index": 1
+        },
+        {
+          "src": "FW1",
+          "src_index": 2,
+          "dst": "CORE1",
+          "dst_index": 1
+        },
+        {
+          "src": "CORE1",
+          "src_index": 2,
+          "dst": "CORE2",
+          "dst_index": 2
+        },
+        {
+          "src": "CORE1",
+          "src_index": 0,
+          "dst": "ACC1",
+          "dst_index": 23
+        },
+        {
+          "src": "CORE2",
+          "src_index": 0,
+          "dst": "ACC2",
+          "dst_index": 23
+        },
+        {
+          "src": "ACC1",
+          "src_index": 9,
+          "dst": "PC1",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC2",
+          "src_index": 9,
+          "dst": "PC2",
+          "dst_index": 0
+        },
+        {
+          "src": "CORE2",
+          "src_index": 3,
+          "dst": "AC1",
+          "dst_index": 0
+        },
+        {
+          "src": "AC1",
+          "src_index": 1,
+          "dst": "AP1",
+          "dst_index": 0
+        },
+        {
+          "src": "AP1",
+          "src_index": 1,
+          "dst": "STA1",
+          "dst_index": 0
+        }
+      ]
+    },
+    {
+      "file": "ROUTE-FW.topo",
+      "sha256": "1b30025db5b769792bf6445fae702830dbff8d7787081156292bc3046dac8866",
+      "bytes": 11816,
+      "devices": [
+        {
+          "name": "R1",
+          "model": "AR2220",
+          "com_port": "2000",
+          "note": "路由器，VBoxHeadline 虚拟机，控制台 2000+"
+        },
+        {
+          "name": "R2",
+          "model": "AR2220",
+          "com_port": "2001",
+          "note": "路由器，VBoxHeadline 虚拟机，控制台 2000+"
+        },
+        {
+          "name": "R3",
+          "model": "AR2220",
+          "com_port": "2002",
+          "note": "路由器，VBoxHeadline 虚拟机，控制台 2000+"
+        },
+        {
+          "name": "FW1",
+          "model": "USG6000V",
+          "com_port": "2003",
+          "note": "防火墙，只允许 USG6000；0/0/0 仅管理口；VRRP/HRP 语法与交换机不同"
+        },
+        {
+          "name": "CORE1",
+          "model": "S5700",
+          "com_port": "2004",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "CORE2",
+          "model": "S5700",
+          "com_port": "2005",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "ACC1",
+          "model": "S5700",
+          "com_port": "2006",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "ACC2",
+          "model": "S5700",
+          "com_port": "2007",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "PC1",
+          "model": "PC",
+          "com_port": "2008",
+          "note": "eNSP PC 模拟器，无 TCP 控制台，只能 GUI；支持 ipconfig/ping/arp/tracert"
+        },
+        {
+          "name": "PC2",
+          "model": "PC",
+          "com_port": "2009",
+          "note": "eNSP PC 模拟器，无 TCP 控制台，只能 GUI；支持 ipconfig/ping/arp/tracert"
+        }
+      ],
+      "links": [
+        {
+          "src": "R1",
+          "src_index": 1,
+          "dst": "R2",
+          "dst_index": 1
+        },
+        {
+          "src": "R1",
+          "src_index": 2,
+          "dst": "CORE1",
+          "dst_index": 1
+        },
+        {
+          "src": "R2",
+          "src_index": 2,
+          "dst": "CORE2",
+          "dst_index": 1
+        },
+        {
+          "src": "R3",
+          "src_index": 0,
+          "dst": "R1",
+          "dst_index": 0
+        },
+        {
+          "src": "R3",
+          "src_index": 1,
+          "dst": "R2",
+          "dst_index": 0
+        },
+        {
+          "src": "CORE1",
+          "src_index": 2,
+          "dst": "CORE2",
+          "dst_index": 2
+        },
+        {
+          "src": "CORE1",
+          "src_index": 3,
+          "dst": "CORE2",
+          "dst_index": 3
+        },
+        {
+          "src": "CORE1",
+          "src_index": 6,
+          "dst": "FW1",
+          "dst_index": 1
+        },
+        {
+          "src": "FW1",
+          "src_index": 2,
+          "dst": "R3",
+          "dst_index": 2
+        },
+        {
+          "src": "CORE1",
+          "src_index": 0,
+          "dst": "ACC1",
+          "dst_index": 23
+        },
+        {
+          "src": "CORE2",
+          "src_index": 0,
+          "dst": "ACC2",
+          "dst_index": 23
+        },
+        {
+          "src": "ACC1",
+          "src_index": 9,
+          "dst": "PC1",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC2",
+          "src_index": 9,
+          "dst": "PC2",
+          "dst_index": 0
+        }
+      ]
+    },
+    {
+      "file": "WLAN-6AP.topo",
+      "sha256": "eb29eef0c18106bf1652bfa4f50a3bd4ceb0e2b11a8ca07adfffa601c9fa6c75",
+      "bytes": 10940,
+      "devices": [
+        {
+          "name": "CORE1",
+          "model": "S5700",
+          "com_port": "2000",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "CORE2",
+          "model": "S5700",
+          "com_port": "2001",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "ACC1",
+          "model": "S5700",
+          "com_port": "2002",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "ACC2",
+          "model": "S5700",
+          "com_port": "2003",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        },
+        {
+          "name": "AC1",
+          "model": "AC6005",
+          "com_port": "2004",
+          "note": "无线控制器，VBox 虚拟机；本机镜像 VAP 不实例化（见 B12）"
+        },
+        {
+          "name": "AC2",
+          "model": "AC6005",
+          "com_port": "2005",
+          "note": "无线控制器，VBox 虚拟机；本机镜像 VAP 不实例化（见 B12）"
+        },
+        {
+          "name": "AP1",
+          "model": "AP6050",
+          "com_port": "2006",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "AP2",
+          "model": "AP6050",
+          "com_port": "2007",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "AP3",
+          "model": "AP6050",
+          "com_port": "2008",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "AP4",
+          "model": "AP6050",
+          "com_port": "2009",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "AP5",
+          "model": "AP6050",
+          "com_port": "2010",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "AP6",
+          "model": "AP6050",
+          "com_port": "2011",
+          "note": "AP，VBox 虚拟机；可注册 AC、radio 可开"
+        },
+        {
+          "name": "STA1",
+          "model": "STA",
+          "com_port": "2012",
+          "note": "无线终端，无 TCP 控制台，需 GUI 关联 SSID"
+        }
+      ],
+      "links": [
+        {
+          "src": "CORE1",
+          "src_index": 2,
+          "dst": "CORE2",
+          "dst_index": 2
+        },
+        {
+          "src": "CORE1",
+          "src_index": 3,
+          "dst": "CORE2",
+          "dst_index": 3
+        },
+        {
+          "src": "CORE1",
+          "src_index": 0,
+          "dst": "ACC1",
+          "dst_index": 23
+        },
+        {
+          "src": "CORE2",
+          "src_index": 0,
+          "dst": "ACC2",
+          "dst_index": 23
+        },
+        {
+          "src": "CORE2",
+          "src_index": 4,
+          "dst": "AC1",
+          "dst_index": 0
+        },
+        {
+          "src": "CORE1",
+          "src_index": 5,
+          "dst": "AC2",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC1",
+          "src_index": 19,
+          "dst": "AP1",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC2",
+          "src_index": 19,
+          "dst": "AP2",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC1",
+          "src_index": 20,
+          "dst": "AP3",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC2",
+          "src_index": 20,
+          "dst": "AP4",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC1",
+          "src_index": 21,
+          "dst": "AP5",
+          "dst_index": 0
+        },
+        {
+          "src": "ACC2",
+          "src_index": 21,
+          "dst": "AP6",
+          "dst_index": 0
+        }
+      ]
+    },
+    {
+      "file": "SWITCH-MODEL-CHECK.topo",
+      "sha256": "0b2e4d3eda6f999df685d91b241118951feb4eb89c7bda00c10d5c7c0370f205",
+      "bytes": 3072,
+      "devices": [
+        {
+          "name": "SW3700-A",
+          "model": "S3700",
+          "com_port": "2000",
+          "note": ""
+        },
+        {
+          "name": "SW3700-B",
+          "model": "S3700",
+          "com_port": "2001",
+          "note": ""
+        },
+        {
+          "name": "SW5700-C",
+          "model": "S5700",
+          "com_port": "2002",
+          "note": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe"
+        }
+      ],
+      "links": [
+        {
+          "src": "SW3700-A",
+          "src_index": 0,
+          "dst": "SW3700-B",
+          "dst_index": 0
+        },
+        {
+          "src": "SW3700-B",
+          "src_index": 1,
+          "dst": "SW5700-C",
+          "dst_index": 0
+        }
+      ]
+    }
+  ],
+  "config_sets": {
+    "configs-8a4": [
+      "ACC1.cfg.txt",
+      "ACC2.cfg.txt",
+      "CORE1.cfg.txt",
+      "CORE2.cfg.txt"
+    ],
+    "configs-8a3": [
+      "AC1-min.cfg.txt",
+      "AC1.cfg.txt",
+      "ACC1.cfg.txt",
+      "ACC2.cfg.txt",
+      "CORE1.cfg.txt",
+      "CORE2.cfg.txt",
+      "LSW1.cfg.txt"
+    ],
+    "configs-mega": [
+      "AC1.cfg.txt",
+      "AC2.cfg.txt",
+      "ACC1.cfg.txt",
+      "ACC2.cfg.txt",
+      "AP1.cfg.txt",
+      "AP2.cfg.txt",
+      "CORE1.cfg.txt",
+      "CORE2.cfg.txt",
+      "FW1.cfg.txt",
+      "FW2.cfg.txt",
+      "PC1.cfg.txt",
+      "PC2.cfg.txt",
+      "R1.cfg.txt",
+      "R2.cfg.txt",
+      "STA1.cfg.txt"
+    ],
+    "configs-advanced": [
+      "AC1-ha.cfg.txt",
+      "AC2-ha.cfg.txt",
+      "CORE1-advanced.cfg.txt",
+      "CORE2-advanced.cfg.txt",
+      "R1-advanced.cfg.txt",
+      "R1-isis-pim.cfg.txt",
+      "R1-v6-transition.cfg.txt",
+      "R2-advanced.cfg.txt",
+      "R2-isis-pim.cfg.txt",
+      "R2-v6-transition.cfg.txt"
+    ],
+    "configs": [
+      "AC1.cfg.txt",
+      "ACC1.cfg.txt",
+      "ACC2.cfg.txt",
+      "CORE1.cfg.txt",
+      "CORE2.cfg.txt",
+      "FW1.cfg.txt",
+      "R1.cfg.txt",
+      "R2.cfg.txt"
+    ]
+  },
+  "evidence": [
+    {
+      "path": "evidence/evidence-8a/8a_5b_after_reboot.png",
+      "sha256": "ddfa482056c00a467e0eeb3cb4cc798eee89d08b933099e2e8741eb3c9807af0",
+      "bytes": 168726
+    },
+    {
+      "path": "evidence/evidence-8a/8a_5b_pc1_to_pc2.png",
+      "sha256": "ded45519c5afab2a170d022058d6c18949497b5b1050cdc6eccd96ae478b49a5",
+      "bytes": 171814
+    },
+    {
+      "path": "evidence/evidence-8a/8a_5b_pc2_to_pc1.png",
+      "sha256": "e640517fb72d3781e93d11a07cbc775c1c0d69cc0296d8239a55bd4b66e1f8fc",
+      "bytes": 119352
+    },
+    {
+      "path": "evidence/evidence-8a/persistence-5b-and-cores.txt",
+      "sha256": "8c191d808657536f78b63188e4c903c9334a8d7abcaf8166df113007e697428b",
+      "bytes": 5971
+    },
+    {
+      "path": "evidence/evidence-8a/SHA256SUMS.json",
+      "sha256": "b1f157ef81b93440950f20dc14f0aa0ed90518c2a08f0325f6a8d25753cff9a0",
+      "bytes": 543
+    },
+    {
+      "path": "evidence/evidence-8a4/8a4_fault_arp.png",
+      "sha256": "b4f9dd75c0ac6187bf619cc6ece96330b606a41ed087ff358cae6e343a98c1c9",
+      "bytes": 157487
+    },
+    {
+      "path": "evidence/evidence-8a4/8a4_link_deleted.png",
+      "sha256": "4cdc89725736f83c8a199daf21c1301611ac193b7e1137f07ad4d49a0369ce57",
+      "bytes": 656444
+    },
+    {
+      "path": "evidence/evidence-8a4/8a4_r1_restored_ping.png",
+      "sha256": "393c358a31997f716fd16a72a05f6731dde9c8bae2ae633e741e74199d03335c",
+      "bytes": 149968
+    },
+    {
+      "path": "evidence/evidence-8a4/8a4_r1_shutdown_ping.png",
+      "sha256": "b965ea423067fa7130084689539f591a4f67a20178136c314f27ef07c22262f4",
+      "bytes": 155742
+    },
+    {
+      "path": "evidence/evidence-8a4/8a4_r2_after.png",
+      "sha256": "bac71944f2d9df0861fdebec4bcfa5dec834a572600324638aa722748125be64",
+      "bytes": 149483
+    },
+    {
+      "path": "evidence/evidence-8a4/8a4_r2_during.png",
+      "sha256": "f628a86c408a56ebe9d9db145cff647e2e7182c5f77f397aabdf4c519983eea9",
+      "bytes": 152798
+    },
+    {
+      "path": "evidence/evidence-8a4/8a4_r3_after.png",
+      "sha256": "43ad43c105fa05147899a055f18b7f694345e067483e45473462fd07f955efae",
+      "bytes": 149632
+    },
+    {
+      "path": "evidence/evidence-8a4/8a4_r3_during.png",
+      "sha256": "53089bb76e290ab7b490eb7c382039a494abd6d256c505b57a5954dee8ea9b42",
+      "bytes": 152424
+    },
+    {
+      "path": "evidence/evidence-8a4/8a4_round0_baseline.png",
+      "sha256": "4e7bd29903e8be34d31ed7aade116a792e3a3e06f67aa87ca857ac4880fdd61f",
+      "bytes": 167891
+    },
+    {
+      "path": "evidence/evidence-8a4/8a4_round2_deleted3.png",
+      "sha256": "5c9612f7d5343c260361fc0a9e0a8dd2f0b856e7adf880a7cb6084a9bc300300",
+      "bytes": 656536
+    },
+    {
+      "path": "evidence/evidence-8a4/dual-uplink-timeline.json",
+      "sha256": "a83fe571a47415ed6bfba89048b5a8deb33e17d949eb5073c6161986631be568",
+      "bytes": 1903
+    },
+    {
+      "path": "evidence/evidence-8a4/SHA256SUMS.json",
+      "sha256": "b65896453c866cde63ad1e2af17ff58736d805baa1770b7521573c6edbfe16bc",
+      "bytes": 1590
+    },
+    {
+      "path": "evidence/evidence-8a4/timeline.json",
+      "sha256": "8ef1ca0bf7e4d711eb44f343adae44bab63cef4a9790f02006170d2d638e0674",
+      "bytes": 2279
+    },
+    {
+      "path": "evidence/evidence-8a3/SHA256SUMS.json",
+      "sha256": "f23ffc987d911d387278ae3473e743fda658d92c9ede3c4d885d677f8cad5f8e",
+      "bytes": 269
+    },
+    {
+      "path": "evidence/evidence-8a3/wlan-roam-round2.txt",
+      "sha256": "a1f7d5980e90359811767ede2a684fcbc91a38c8b0b126fc088aa994fffba9de",
+      "bytes": 1967
+    },
+    {
+      "path": "evidence/evidence-8a3/wlan-roaming-attempt.txt",
+      "sha256": "2509ad868bcd2a4cbedf478e8df9b47ba65b25cfe5e035f838e9d357b561d12f",
+      "bytes": 2757
+    }
+  ],
+  "docs": [
+    {
+      "path": "docs/STAGE_8A_ACCEPTANCE.md",
+      "sha256": "a976fbb85d5c1f12ca76c65e1ee8c7eb7929f2da7a93f0d259ca0c3f99c30953",
+      "bytes": 17563
+    },
+    {
+      "path": "docs/MEGA_TEST_CASE_MAPPING.md",
+      "sha256": "c9e4005535f60101375bab3b7f77eeaa2a696423b78b7b7dca1f318d0e277962",
+      "bytes": 4259
+    },
+    {
+      "path": "docs/MEGA_REMAINING_BLOCKERS.md",
+      "sha256": "d78b340c4a7be0c19015e01712e06c49aba74d601cfde472123489eda550bc1e",
+      "bytes": 4035
+    },
+    {
+      "path": "docs/TOPOLOGY_RULES.md",
+      "sha256": "173390ee44abe52f4060435e3696453f27b35f5b0ceafdab80b7c47ffbf0f477",
+      "bytes": 4781
+    },
+    {
+      "path": "docs/ENTERPRISE_LAB_BASELINE.md",
+      "sha256": "4b6ecd4e556cfa900cf4513c7a291bb778c925efb6a4a2f2a2daa37905c1efb8",
+      "bytes": 2647
+    },
+    {
+      "path": "docs/ENSP_FINAL_TEST_BACKLOG.md",
+      "sha256": "1e96300ef9a8932cacbb2fe416d0f58125da6ee6bf897b0a5adfc970aedb7bbd",
+      "bytes": 5787
+    }
+  ],
+  "models": [
+    "AC6005",
+    "AP6050",
+    "AR2220",
+    "Cloud",
+    "PC",
+    "S3700",
+    "S5700",
+    "STA",
+    "USG6000V"
+  ],
+  "model_notes": {
+    "S5700": "交换机，控制台 127.0.0.1:2000+（telnet），进程 eNSP_Switch.exe",
+    "AR2220": "路由器，VBoxHeadline 虚拟机，控制台 2000+",
+    "USG6000V": "防火墙，只允许 USG6000；0/0/0 仅管理口；VRRP/HRP 语法与交换机不同",
+    "AC6005": "无线控制器，VBox 虚拟机；本机镜像 VAP 不实例化（见 B12）",
+    "AP6050": "AP，VBox 虚拟机；可注册 AC、radio 可开",
+    "PC": "eNSP PC 模拟器，无 TCP 控制台，只能 GUI；支持 ipconfig/ping/arp/tracert",
+    "STA": "无线终端，无 TCP 控制台，需 GUI 关联 SSID",
+    "Cloud": "需要 Npcap 兼容模式；本机 WinPcapCompatible=0 不可用"
+  },
+  "verified": [
+    "5B：LSW1/LSW2 save+reboot 配置保留；PC1↔PC2 双向 5/5（跨 VLAN 三层转发）",
+    "8A-4：VRRP 主备（CORE1 Master×2）与 MSTP 角色可复现；接口 shutdown 后中断 100%、恢复后 0%（≤2 s 采样）",
+    "8A-4：双上联主口 shutdown 后 STP 切换备用口，10 s 采样 0% 丢包",
+    "8A-11：CORE1/CORE2/ACC1/ACC2 save+reboot 后角色与 VLAN 保持",
+    "8A-3：AC6005 + 2×AP6050 可注册（nor），radio on"
+  ],
+  "limits": [
+    "AC6005 本机镜像 VAP/SSID 不实例化（4 种配置复现），STA 无法关联，漫游不可验证",
+    "Cloud 需要 Npcap 兼容模式；本机 WinPcapCompatible=0，Cloud 不可用",
+    "15 台以上同时启动会提示内存不足；建议分批启动",
+    "USG6000V 0/0/0 仅管理口，不能当业务口",
+    "eNSP PC/STA 无 TCP 控制台，只能 GUI 操作"
+  ]
+}
