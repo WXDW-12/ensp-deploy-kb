@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+kb_local/exports/*.zip
+kb_local/*.zip
+*.log

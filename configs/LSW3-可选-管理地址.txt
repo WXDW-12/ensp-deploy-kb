@@ -1,0 +1,20 @@
+system-view
+sysname LSW3
+interface Vlanif1
+ ip address 192.168.56.10 255.255.255.0
+ quit
+telnet server enable
+aaa
+ local-user admin password cipher Admin@12345
+ local-user admin privilege level 15
+ local-user admin service-type telnet
+ quit
+user-interface vty 0 4
+ authentication-mode aaa
+ protocol inbound telnet
+ user privilege level 15
+ idle-timeout 30 0
+ quit
+return
+save
+y

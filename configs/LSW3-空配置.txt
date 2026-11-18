@@ -1,0 +1,6 @@
+system-view
+sysname LSW3
+quit
+return
+save
+y
