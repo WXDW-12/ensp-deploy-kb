@@ -1,0 +1,271 @@
+{
+  "pack": "advanced",
+  "meta": {
+    "name": "高级协议与策略扩展包",
+    "version": "0.1.0",
+    "updated": "2026-11-05"
+  },
+  "commands": [
+    {
+      "id": "ospf.vlink",
+      "category": "OSPF",
+      "title": "配置 OSPF 虚连接",
+      "keywords": ["ospf", "虚连接", "virtual-link", "vlink", "区域"],
+      "risk": "high",
+      "params": {"req": ["pid", "transit_area", "rid"]},
+      "config": {
+        "huawei": ["system-view", "ospf {{pid}}", "area {{transit_area}}", "vlink-peer {{rid}}", "quit", "quit"],
+        "cisco": ["configure terminal", "router ospf {{pid}}", "area {{transit_area}} virtual-link {{rid}}", "end"],
+        "h3c": ["system-view", "ospf {{pid}}", "area {{transit_area}}", "vlink-peer {{rid}}", "quit", "quit"]
+      },
+      "note": "虚连接必须穿过一个普通非骨干区域（transit area），两端 router-id 需互相可达。"
+    },
+    {
+      "id": "ospf.nssa-default",
+      "category": "OSPF",
+      "title": "NSSA 区域内下发默认路由",
+      "keywords": ["ospf", "nssa", "默认路由", "default-information-originate"],
+      "risk": "medium",
+      "params": {"req": ["pid", "area"]},
+      "config": {
+        "huawei": ["system-view", "ospf {{pid}}", "area {{area}}", "nssa default-route-advertise", "quit", "quit"],
+        "cisco": ["configure terminal", "router ospf {{pid}}", "area {{area}} nssa default-information-originate", "end"],
+        "h3c": ["system-view", "ospf {{pid}}", "area {{area}}", "nssa default-route-advertise", "quit", "quit"]
+      }
+    },
+    {
+      "id": "ospf.network-type",
+      "category": "OSPF",
+      "title": "修改接口 OSPF 网络类型",
+      "keywords": ["ospf", "网络类型", "p2p", "broadcast", "nbma"],
+      "risk": "high",
+      "params": {"req": ["iface", "type"], "ex": {"type": "p2p"}},
+      "config": {
+        "huawei": ["system-view", "interface {{iface}}", "ospf network-type {{type}}", "quit"],
+        "cisco": ["configure terminal", "interface {{iface}}", "ip ospf network {{type}}", "end"],
+        "h3c": ["system-view", "interface {{iface}}", "ospf network-type {{type}}", "quit"]
+      },
+      "note": "类型两端必须一致。华为/华三取值 p2p|broadcast|nbma|p2mp，思科取值 point-to-point|broadcast|non-broadcast|point-to-multipoint。"
+    },
+    {
+      "id": "ospf.filter-import",
+      "category": "OSPF",
+      "title": "OSPF 引入路由过滤",
+      "keywords": ["ospf", "filter-policy", "路由过滤", "distribute-list"],
+      "risk": "high",
+      "params": {"req": ["pid", "prefix"]},
+      "config": {
+        "huawei": ["system-view", "ospf {{pid}}", "filter-policy ip-prefix {{prefix}} import", "quit", "quit"],
+        "cisco": ["configure terminal", "router ospf {{pid}}", "distribute-list prefix {{prefix}} in", "end"],
+        "h3c": ["system-view", "ospf {{pid}}", "filter-policy ip-prefix {{prefix}} import", "quit", "quit"]
+      },
+      "note": "过滤策略写错会把路由全过滤掉，建议先在测试环境用 display/ show 校验命中结果。"
+    },
+    {
+      "id": "ospf.area-range",
+      "category": "OSPF",
+      "title": "ABR 区域间路由聚合",
+      "keywords": ["ospf", "聚合", "abr-summary", "area range", "汇总"],
+      "risk": "medium",
+      "params": {"req": ["pid", "area", "net", "mask"]},
+      "config": {
+        "huawei": ["system-view", "ospf {{pid}}", "area {{area}}", "abr-summary {{net}} {{mask}}", "quit", "quit"],
+        "cisco": ["configure terminal", "router ospf {{pid}}", "area {{area}} range {{net}} {{mask}}", "end"],
+        "h3c": ["system-view", "ospf {{pid}}", "area {{area}}", "abr-summary {{net}} {{mask}}", "quit", "quit"]
+      }
+    },
+    {
+      "id": "prefix.list",
+      "category": "路由策略",
+      "title": "配置前缀列表",
+      "keywords": ["前缀列表", "ip-prefix", "prefix-list", "路由策略"],
+      "risk": "medium",
+      "params": {"req": ["name", "net", "len"], "opt": ["seq", "action"], "ex": {"seq": "10", "action": "permit", "len": "8"}},
+      "defaults": {"seq": "10", "action": "permit"},
+      "config": {
+        "huawei": ["system-view", "ip ip-prefix {{name}} index {{seq}} {{action}} {{net}} {{len}}", "quit"],
+        "cisco": ["configure terminal", "ip prefix-list {{name}} seq {{seq}} {{action}} {{net}}/{{len}}", "end"],
+        "h3c": ["system-view", "ip prefix-list {{name}} index {{seq}} {{action}} {{net}} {{len}}", "quit"]
+      },
+      "note": "思科用 a.b.c.d/len 形式，华为/华三用地址 + 长度两个参数。"
+    },
+    {
+      "id": "route.policy",
+      "category": "路由策略",
+      "title": "配置路由策略（匹配前缀并改度量）",
+      "keywords": ["route-policy", "route-map", "路由策略", "apply", "set"],
+      "risk": "high",
+      "params": {"req": ["name", "prefix"], "opt": ["node", "action", "cost"], "ex": {"node": "10", "action": "permit", "cost": "10"}},
+      "defaults": {"node": "10", "action": "permit", "cost": "10"},
+      "config": {
+        "huawei": ["system-view", "route-policy {{name}} {{action}} node {{node}}", "if-match ip-prefix {{prefix}}", "apply cost {{cost}}", "quit"],
+        "cisco": ["configure terminal", "route-map {{name}} {{action}} {{node}}", "match ip address prefix-list {{prefix}}", "set metric {{cost}}", "end"],
+        "h3c": ["system-view", "route-policy {{name}} {{action}} node {{node}}", "if-match ip-prefix {{prefix}}", "apply cost {{cost}}", "quit"]
+      },
+      "note": "节点未匹配时的默认行为因厂商而异：思科 route-map 隐式拒绝，需额外写 permit 空节点。"
+    },
+    {
+      "id": "bgp.reflector",
+      "category": "BGP",
+      "title": "配置路由反射器客户端",
+      "keywords": ["bgp", "路由反射", "rr", "reflect-client", "ibgp"],
+      "risk": "high",
+      "params": {"req": ["as", "peer"]},
+      "config": {
+        "huawei": ["system-view", "bgp {{as}}", "peer {{peer}} reflect-client", "quit"],
+        "cisco": ["configure terminal", "router bgp {{as}}", "neighbor {{peer}} route-reflector-client", "end"],
+        "h3c": ["system-view", "bgp {{as}}", "peer {{peer}} reflect-client", "quit"]
+      },
+      "note": "RR 只反射 IBGP 路由；客户端之间不必全互联，但 RR 成为单点，建议双 RR 冗余。"
+    },
+    {
+      "id": "bgp.prefix-filter",
+      "category": "BGP",
+      "title": "BGP 邻居前缀过滤",
+      "keywords": ["bgp", "前缀过滤", "ip-prefix", "prefix-list", "路由过滤"],
+      "risk": "high",
+      "params": {"req": ["as", "peer", "prefix"], "opt": ["dir"], "ex": {"dir": "import"}},
+      "defaults": {"dir": "import"},
+      "config": {
+        "huawei": ["system-view", "bgp {{as}}", "peer {{peer}} ip-prefix {{prefix}} {{dir}}", "quit"],
+        "cisco": ["configure terminal", "router bgp {{as}}", "neighbor {{peer}} prefix-list {{prefix}} {{dir}}", "end"],
+        "h3c": ["system-view", "bgp {{as}}", "peer {{peer}} ip-prefix {{prefix}} {{dir}}", "quit"]
+      },
+      "note": "方向取值：华为/华三 import|export，思科 in|out。误配 export 可能造成路由全部外泄或中断。"
+    },
+    {
+      "id": "bgp.community",
+      "category": "BGP",
+      "title": "启用 BGP 团体属性传递",
+      "keywords": ["bgp", "community", "团体属性", "send-community"],
+      "risk": "medium",
+      "params": {"req": ["as", "peer"]},
+      "config": {
+        "huawei": ["system-view", "bgp {{as}}", "peer {{peer}} advertise-community", "quit"],
+        "cisco": ["configure terminal", "router bgp {{as}}", "neighbor {{peer}} send-community", "end"],
+        "h3c": ["system-view", "bgp {{as}}", "peer {{peer}} advertise-community", "quit"]
+      }
+    },
+    {
+      "id": "bgp.timers",
+      "category": "BGP",
+      "title": "调整 BGP 邻居定时器",
+      "keywords": ["bgp", "timer", "keepalive", "hold", "定时器"],
+      "risk": "high",
+      "params": {"req": ["as", "peer"], "opt": ["keep", "hold"], "ex": {"keep": "30", "hold": "90"}},
+      "defaults": {"keep": "30", "hold": "90"},
+      "config": {
+        "huawei": ["system-view", "bgp {{as}}", "peer {{peer}} timer keepalive {{keep}} hold {{hold}}", "quit"],
+        "cisco": ["configure terminal", "router bgp {{as}}", "neighbor {{peer}} timers {{keep}} {{hold}}", "end"],
+        "h3c": ["system-view", "bgp {{as}}", "peer {{peer}} timer keepalive {{keep}} hold {{hold}}", "quit"]
+      },
+      "note": "两端不一致时按较小值协商，可能造成邻居频繁振荡。"
+    },
+    {
+      "id": "bgp.max-prefix",
+      "category": "BGP",
+      "title": "限制邻居接收路由条数",
+      "keywords": ["bgp", "route-limit", "maximum-prefix", "路由限制", "防爆路由表"],
+      "risk": "medium",
+      "params": {"req": ["as", "peer"], "opt": ["max"], "ex": {"max": "1000"}},
+      "defaults": {"max": "1000"},
+      "config": {
+        "huawei": ["system-view", "bgp {{as}}", "peer {{peer}} route-limit {{max}}", "quit"],
+        "cisco": ["configure terminal", "router bgp {{as}}", "neighbor {{peer}} maximum-prefix {{max}}", "end"],
+        "h3c": ["system-view", "bgp {{as}}", "peer {{peer}} route-limit {{max}}", "quit"]
+      }
+    },
+    {
+      "id": "qos.classifier",
+      "category": "QoS",
+      "title": "配置流分类",
+      "keywords": ["qos", "流分类", "classifier", "class-map", "acl 匹配"],
+      "risk": "medium",
+      "params": {"req": ["name", "acl"], "opt": ["op"], "ex": {"op": "and"}},
+      "defaults": {"op": "and"},
+      "config": {
+        "huawei": ["system-view", "traffic classifier {{name}} operator {{op}}", "if-match acl {{acl}}", "quit"],
+        "cisco": ["configure terminal", "class-map match-{{op}} {{name}}", "match access-group {{acl}}", "end"],
+        "h3c": ["system-view", "traffic classifier {{name}} operator {{op}}", "if-match acl {{acl}}", "quit"]
+      },
+      "note": "思科 class-map 需先有对应 ACL（标准或扩展），match-any/match-all 对应 and/or。"
+    },
+    {
+      "id": "qos.policy",
+      "category": "QoS",
+      "title": "配置 QoS 策略并应用到接口",
+      "keywords": ["qos", "策略", "traffic policy", "policy-map", "dscp", "标记"],
+      "risk": "high",
+      "params": {"req": ["cls", "pol", "dscp", "iface"], "opt": ["beh"], "ex": {"beh": "B1", "dscp": "ef"}},
+      "defaults": {"beh": "B1"},
+      "config": {
+        "huawei": ["system-view", "traffic behavior {{beh}}", "remark dscp {{dscp}}", "quit",
+                   "traffic policy {{pol}}", "classifier {{cls}} behavior {{beh}}", "quit",
+                   "interface {{iface}}", "traffic-policy {{pol}} inbound", "quit"],
+        "cisco": ["configure terminal", "policy-map {{pol}}", "class {{cls}}", "set dscp {{dscp}}", "exit",
+                  "interface {{iface}}", "service-policy input {{pol}}", "end"],
+        "h3c": ["system-view", "traffic behavior {{beh}}", "remark dscp {{dscp}}", "quit",
+                "qos policy {{pol}}", "classifier {{cls}} behavior {{beh}}", "quit",
+                "interface {{iface}}", "qos apply policy {{pol}} inbound", "quit"]
+      },
+      "note": "需要先创建流分类（qos.classifier）。思科没有独立 behavior 概念，beh 参数仅华为/华三使用。"
+    },
+    {
+      "id": "ipv6.address",
+      "category": "IPv6",
+      "title": "启用 IPv6 并配置接口地址",
+      "keywords": ["ipv6", "地址", "ipv6 enable", "双栈"],
+      "risk": "medium",
+      "params": {"req": ["iface", "addr"], "ex": {"addr": "2001:db8::1/64"}},
+      "config": {
+        "huawei": ["system-view", "ipv6", "interface {{iface}}", "ipv6 enable", "ipv6 address {{addr}}", "quit"],
+        "cisco": ["configure terminal", "ipv6 unicast-routing", "interface {{iface}}", "ipv6 enable", "ipv6 address {{addr}}", "end"],
+        "h3c": ["system-view", "ipv6", "interface {{iface}}", "ipv6 address {{addr}}", "ipv6 enable", "quit"]
+      },
+      "note": "华为/华三需先在系统视图全局开启 ipv6；思科需全局 ipv6 unicast-routing 才能转发。"
+    },
+    {
+      "id": "ipv6.route",
+      "category": "IPv6",
+      "title": "配置 IPv6 静态路由",
+      "keywords": ["ipv6", "静态路由", "ipv6 route", "下一跳"],
+      "risk": "medium",
+      "params": {"req": ["dest", "len", "nexthop"]},
+      "config": {
+        "huawei": ["system-view", "ipv6 route-static {{dest}} {{len}} {{nexthop}}", "quit"],
+        "cisco": ["configure terminal", "ipv6 route {{dest}}/{{len}} {{nexthop}}", "end"],
+        "h3c": ["system-view", "ipv6 route-static {{dest}} {{len}} {{nexthop}}", "quit"]
+      }
+    },
+    {
+      "id": "mirror.port",
+      "category": "端口镜像",
+      "title": "配置本地端口镜像",
+      "keywords": ["镜像", "mirror", "抓包", "monitor session", "流量分析"],
+      "risk": "medium",
+      "params": {"req": ["src", "dst"], "opt": ["dir"], "ex": {"dir": "both"}},
+      "defaults": {"dir": "both"},
+      "config": {
+        "huawei": ["system-view", "observe-port 1 interface {{dst}}", "interface {{src}}", "port-mirroring to observe-port 1 {{dir}}", "quit"],
+        "cisco": ["configure terminal", "monitor session 1 source interface {{src}} {{dir}}", "monitor session 1 destination interface {{dst}}", "end"],
+        "h3c": ["system-view", "mirroring-group 1 local", "mirroring-group 1 mirroring-port {{src}} {{dir}}", "mirroring-group 1 monitor-port {{dst}}", "quit"]
+      },
+      "note": "目的端口不能再承载业务；方向取值华为/华三 inbound|outbound|both，思科 rx|tx|both。"
+    },
+    {
+      "id": "stp.priority",
+      "category": "生成树",
+      "title": "设置 MSTP 实例优先级",
+      "keywords": ["stp", "优先级", "priority", "实例", "选根"],
+      "risk": "medium",
+      "params": {"req": [], "opt": ["inst", "prio"], "ex": {"inst": "0", "prio": "4096"}},
+      "defaults": {"inst": "0", "prio": "4096"},
+      "config": {
+        "huawei": ["system-view", "stp instance {{inst}} priority {{prio}}", "quit"],
+        "cisco": ["configure terminal", "spanning-tree mst {{inst}} priority {{prio}}", "end"],
+        "h3c": ["system-view", "stp instance {{inst}} priority {{prio}}", "quit"]
+      },
+      "note": "优先级必须是 4096 的倍数，数值越小越优先。"
+    }
+  ]
+}

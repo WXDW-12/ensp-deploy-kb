@@ -1,0 +1,215 @@
+{
+  "pack": "switching",
+  "meta": {
+    "name": "二层与安全扩展包",
+    "version": "0.1.0",
+    "updated": "2026-11-05"
+  },
+  "commands": [
+    {
+      "id": "mstp.region",
+      "category": "生成树",
+      "title": "配置 MSTP 域与实例映射",
+      "keywords": [
+        "mstp",
+        "多实例",
+        "region",
+        "域",
+        "实例",
+        "vlan 映射"
+      ],
+      "risk": "high",
+      "params": {
+        "req": [
+          "name",
+          "inst",
+          "vlans"
+        ],
+        "opt": [
+          "rev"
+        ],
+        "ex": {
+          "name": "RG-CORE",
+          "inst": "1",
+          "vlans": "10 20"
+        }
+      },
+      "defaults": {
+        "rev": "1"
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "stp region-configuration",
+          "region-name {{name}}",
+          "instance {{inst}} vlan {{vlans|space}}",
+          "revision-level {{rev}}",
+          "active region-configuration",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "spanning-tree mst configuration",
+          "name {{name}}",
+          "instance {{inst}} vlan {{vlans|comma}}",
+          "revision {{rev}}",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "stp region-configuration",
+          "region-name {{name}}",
+          "instance {{inst}} vlan {{vlans|space}}",
+          "revision-level {{rev}}",
+          "active region-configuration",
+          "quit"
+        ]
+      },
+      "note": "域内所有设备的域名/修订级别/实例-VLAN 映射必须完全一致，否则会分裂成多个域。思科需先 `spanning-tree mode mst`。"
+    },
+    {
+      "id": "port.security",
+      "category": "端口安全",
+      "title": "配置端口 MAC 数量限制",
+      "keywords": [
+        "端口安全",
+        "port-security",
+        "mac 限制",
+        "防私接"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "iface"
+        ],
+        "opt": [
+          "max"
+        ],
+        "ex": {
+          "max": "1"
+        }
+      },
+      "defaults": {
+        "max": "1"
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "interface {{iface}}",
+          "port-security enable",
+          "port-security max-mac-num {{max}}",
+          "port-security protect-action shutdown",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "interface {{iface}}",
+          "switchport mode access",
+          "switchport port-security",
+          "switchport port-security maximum {{max}}",
+          "switchport port-security violation shutdown",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "port-security enable",
+          "interface {{iface}}",
+          "port-security max-mac-count {{max}}",
+          "port-security intrusion-mode disableport-temporarily",
+          "quit"
+        ]
+      },
+      "note": "华三需先在系统视图开启 port-security；超限后华为/思科默认 shutdown 端口，需人工恢复。"
+    },
+    {
+      "id": "dhcp.snooping",
+      "category": "DHCP",
+      "title": "配置 DHCP Snooping 防私接服务器",
+      "keywords": [
+        "dhcp snooping",
+        "防私接",
+        "伪造dhcp",
+        "安全"
+      ],
+      "risk": "high",
+      "params": {
+        "req": [
+          "iface"
+        ],
+        "opt": [
+          "vlan"
+        ],
+        "ex": {
+          "vlan": "10"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "dhcp snooping enable",
+          "interface {{iface}}",
+          "dhcp snooping enable",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "ip dhcp snooping",
+          "ip dhcp snooping vlan {{vlan}}",
+          "interface {{iface}}",
+          "ip dhcp snooping trust",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "dhcp snooping enable",
+          "interface {{iface}}",
+          "dhcp snooping enable",
+          "quit"
+        ]
+      },
+      "note": "上行口必须设为信任口，否则合法 DHCP 应答会被丢弃导致全断网；开启前先确认拓扑方向。"
+    },
+    {
+      "id": "storm.control",
+      "category": "端口安全",
+      "title": "配置广播风暴抑制",
+      "keywords": [
+        "风暴抑制",
+        "storm-control",
+        "广播风暴",
+        "环路"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "iface",
+          "value"
+        ],
+        "ex": {
+          "value": "1000"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "interface {{iface}}",
+          "storm-control broadcast min-rate {{value}}",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "interface {{iface}}",
+          "storm-control broadcast level {{value}}",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "interface {{iface}}",
+          "broadcast-suppression pps {{value}}",
+          "quit"
+        ]
+      },
+      "note": "value 单位不同：华为 pps、华三 pps、思科为百分比（如 20 表示 20%）。各版本命令差异较大，下发前建议用 ? 校验。"
+    }
+  ]
+}

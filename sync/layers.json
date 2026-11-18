@@ -1,0 +1,58 @@
+[
+ {
+  "id": 15,
+  "name": "联通机房路由器",
+  "sort": -10,
+  "created_at": "",
+  "updated_at": "2026-11-07 23:37:51"
+ },
+ {
+  "id": 18,
+  "name": "核心路由器",
+  "sort": 0,
+  "created_at": "",
+  "updated_at": ""
+ },
+ {
+  "id": 19,
+  "name": "核心防火墙",
+  "sort": 10,
+  "created_at": "",
+  "updated_at": ""
+ },
+ {
+  "id": 13,
+  "name": "其余防火墙",
+  "sort": 15,
+  "created_at": "",
+  "updated_at": "2026-11-07 23:30:13"
+ },
+ {
+  "id": 3,
+  "name": "核心交换机",
+  "sort": 20,
+  "created_at": "",
+  "updated_at": ""
+ },
+ {
+  "id": 20,
+  "name": "汇聚交换机",
+  "sort": 30,
+  "created_at": "",
+  "updated_at": ""
+ },
+ {
+  "id": 21,
+  "name": "接入交换机",
+  "sort": 40,
+  "created_at": "",
+  "updated_at": ""
+ },
+ {
+  "id": 22,
+  "name": "终端",
+  "sort": 50,
+  "created_at": "",
+  "updated_at": ""
+ }
+]

@@ -1,0 +1,2303 @@
+{
+  "pack": "endpoint",
+  "meta": {
+    "name": "终端命令扩展包（Linux / Windows / NAS）",
+    "version": "0.1.0",
+    "updated": "2026-11-06",
+    "vendors": {
+      "linux": "Linux（Ubuntu / CentOS / Debian 通用）",
+      "windows": "Windows Server（PowerShell / CMD）",
+      "nas": "NAS（群晖 DSM / 威联通 QTS，Linux 底层）"
+    },
+    "note": "终端侧只读排查命令为主；改配置类命令都标了风险级别，执行前请确认。"
+  },
+  "commands": [
+    {
+      "id": "linux.ls",
+      "category": "Linux 文件",
+      "title": "列目录（含隐藏文件与大小）",
+      "keywords": [
+        "ls",
+        "列目录",
+        "查看文件"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [],
+        "opt": [
+          "path"
+        ],
+        "ex": {
+          "path": "/var/log"
+        }
+      },
+      "defaults": {
+        "path": "/var/log"
+      },
+      "config": {
+        "linux": [
+          "ls -alh {{path}}"
+        ]
+      },
+      "note": "排查时先看目录里有没有异常大的日志或核心转储文件。"
+    },
+    {
+      "id": "linux.find_files",
+      "category": "Linux 文件",
+      "title": "按文件名查找",
+      "keywords": [
+        "find",
+        "查找文件",
+        "搜索"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "name"
+        ],
+        "opt": [
+          "path"
+        ],
+        "ex": {
+          "name": "*.conf",
+          "path": "/etc"
+        }
+      },
+      "defaults": {
+        "path": "/etc"
+      },
+      "config": {
+        "linux": [
+          "find {{path}} -name \"{{name}}\" 2>/dev/null | head -50"
+        ]
+      }
+    },
+    {
+      "id": "linux.find_large",
+      "category": "Linux 文件",
+      "title": "找出大于指定大小的文件",
+      "keywords": [
+        "大文件",
+        "磁盘占满",
+        "find"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [],
+        "opt": [
+          "path",
+          "size"
+        ],
+        "ex": {
+          "path": "/",
+          "size": "+500M"
+        }
+      },
+      "defaults": {
+        "path": "/",
+        "size": "+500M"
+      },
+      "config": {
+        "linux": [
+          "find {{path}} -xdev -type f -size {{size}} -exec ls -lh {} \\; 2>/dev/null | head -30"
+        ]
+      },
+      "note": "磁盘告警时先跑这个，再决定清理还是扩容。"
+    },
+    {
+      "id": "linux.grep",
+      "category": "Linux 文件",
+      "title": "在文件里搜索关键字",
+      "keywords": [
+        "grep",
+        "搜索内容",
+        "日志检索"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "keyword"
+        ],
+        "opt": [
+          "path"
+        ],
+        "ex": {
+          "keyword": "ERROR",
+          "path": "/var/log"
+        }
+      },
+      "defaults": {
+        "path": "/var/log"
+      },
+      "config": {
+        "linux": [
+          "grep -rn --include='*.log' \"{{keyword}}\" {{path}} 2>/dev/null | tail -50"
+        ]
+      }
+    },
+    {
+      "id": "linux.tar_backup",
+      "category": "Linux 文件",
+      "title": "打包目录做备份",
+      "keywords": [
+        "tar",
+        "打包",
+        "备份"
+      ],
+      "risk": "low",
+      "params": {
+        "req": [
+          "path",
+          "out"
+        ],
+        "ex": {
+          "path": "/etc",
+          "out": "/tmp/etc.tar.gz"
+        }
+      },
+      "config": {
+        "linux": [
+          "tar -czf {{out}} {{path}}"
+        ]
+      },
+      "verify": {
+        "linux": [
+          "tar -tzf {{out}} | head"
+        ]
+      }
+    },
+    {
+      "id": "linux.rsync",
+      "category": "Linux 文件",
+      "title": "同步目录（增量）",
+      "keywords": [
+        "rsync",
+        "同步",
+        "备份"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "src",
+          "dst"
+        ],
+        "ex": {
+          "src": "/data/",
+          "dst": "backup:/data/"
+        }
+      },
+      "config": {
+        "linux": [
+          "rsync -avz --progress {{src}} {{dst}}"
+        ]
+      },
+      "note": "目标端带冒号表示走 SSH；不加 --delete，避免误删对端文件。"
+    },
+    {
+      "id": "linux.chmod",
+      "category": "Linux 权限",
+      "title": "修改文件权限",
+      "keywords": [
+        "chmod",
+        "权限",
+        "755"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "mode",
+          "path"
+        ],
+        "ex": {
+          "mode": "755",
+          "path": "/opt/app"
+        }
+      },
+      "config": {
+        "linux": [
+          "chmod -R {{mode}} {{path}}"
+        ]
+      },
+      "verify": {
+        "linux": [
+          "ls -ld {{path}}"
+        ]
+      }
+    },
+    {
+      "id": "linux.chown",
+      "category": "Linux 权限",
+      "title": "修改属主与属组",
+      "keywords": [
+        "chown",
+        "属主",
+        "属组"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "user",
+          "path"
+        ],
+        "opt": [
+          "group"
+        ],
+        "ex": {
+          "user": "nginx",
+          "path": "/var/www"
+        }
+      },
+      "config": {
+        "linux": [
+          "chown -R {{user}}[[.{{group}}]] {{path}}"
+        ]
+      },
+      "verify": {
+        "linux": [
+          "ls -ld {{path}}"
+        ]
+      }
+    },
+    {
+      "id": "linux.ps_top",
+      "category": "Linux 进程",
+      "title": "CPU 占用最高的 10 个进程",
+      "keywords": [
+        "ps",
+        "cpu",
+        "进程",
+        "卡"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "ps aux --sort=-%cpu | head -11"
+        ]
+      }
+    },
+    {
+      "id": "linux.mem_top",
+      "category": "Linux 进程",
+      "title": "内存占用最高的 10 个进程",
+      "keywords": [
+        "ps",
+        "内存",
+        "oom"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "ps aux --sort=-%mem | head -11"
+        ]
+      }
+    },
+    {
+      "id": "linux.pgrep",
+      "category": "Linux 进程",
+      "title": "按名字查进程 PID",
+      "keywords": [
+        "pgrep",
+        "pid",
+        "进程"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "name"
+        ],
+        "ex": {
+          "name": "nginx"
+        }
+      },
+      "config": {
+        "linux": [
+          "pgrep -a {{name}}"
+        ]
+      }
+    },
+    {
+      "id": "linux.kill",
+      "category": "Linux 进程",
+      "title": "强制结束进程",
+      "keywords": [
+        "kill",
+        "结束进程"
+      ],
+      "risk": "high",
+      "params": {
+        "req": [
+          "pid"
+        ],
+        "ex": {
+          "pid": "12345"
+        }
+      },
+      "config": {
+        "linux": [
+          "kill -9 {{pid}}"
+        ]
+      },
+      "note": "先 kill -15 让它自己退出，无响应再 -9。"
+    },
+    {
+      "id": "linux.systemctl_status",
+      "category": "Linux 服务",
+      "title": "查看服务状态",
+      "keywords": [
+        "systemctl",
+        "服务",
+        "status"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "service"
+        ],
+        "ex": {
+          "service": "nginx"
+        }
+      },
+      "config": {
+        "linux": [
+          "systemctl status {{service}} --no-pager -l"
+        ]
+      }
+    },
+    {
+      "id": "linux.systemctl_restart",
+      "category": "Linux 服务",
+      "title": "重启服务",
+      "keywords": [
+        "systemctl",
+        "restart",
+        "重启"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "service"
+        ],
+        "ex": {
+          "service": "nginx"
+        }
+      },
+      "config": {
+        "linux": [
+          "systemctl restart {{service}}"
+        ]
+      },
+      "verify": {
+        "linux": [
+          "systemctl is-active {{service}}"
+        ]
+      }
+    },
+    {
+      "id": "linux.systemctl_enable",
+      "category": "Linux 服务",
+      "title": "设置开机自启并立即启动",
+      "keywords": [
+        "systemctl",
+        "enable",
+        "自启"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "service"
+        ],
+        "ex": {
+          "service": "docker"
+        }
+      },
+      "config": {
+        "linux": [
+          "systemctl enable --now {{service}}"
+        ]
+      },
+      "verify": {
+        "linux": [
+          "systemctl is-enabled {{service}}"
+        ]
+      }
+    },
+    {
+      "id": "linux.journal_unit",
+      "category": "Linux 服务",
+      "title": "查看某个服务的日志",
+      "keywords": [
+        "journalctl",
+        "日志",
+        "服务"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "service"
+        ],
+        "ex": {
+          "service": "nginx"
+        }
+      },
+      "config": {
+        "linux": [
+          "journalctl -u {{service}} -n 100 --no-pager"
+        ]
+      }
+    },
+    {
+      "id": "linux.failed_units",
+      "category": "Linux 服务",
+      "title": "列出启动失败的服务",
+      "keywords": [
+        "systemctl",
+        "failed",
+        "故障"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "systemctl --failed --no-pager"
+        ]
+      }
+    },
+    {
+      "id": "linux.uptime",
+      "category": "Linux 性能",
+      "title": "查看负载与运行时长",
+      "keywords": [
+        "uptime",
+        "负载",
+        "load"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "uptime"
+        ]
+      },
+      "note": "load 持续高于 CPU 核数说明排队严重。"
+    },
+    {
+      "id": "linux.vmstat",
+      "category": "Linux 性能",
+      "title": "系统整体状态（CPU/内存/IO）",
+      "keywords": [
+        "vmstat",
+        "性能",
+        "io"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "vmstat 1 5"
+        ]
+      }
+    },
+    {
+      "id": "linux.free",
+      "category": "Linux 性能",
+      "title": "查看内存与 swap",
+      "keywords": [
+        "free",
+        "内存",
+        "swap"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "free -h"
+        ]
+      }
+    },
+    {
+      "id": "linux.ip_addr",
+      "category": "Linux 网络",
+      "title": "查看所有网卡 IP",
+      "keywords": [
+        "ip",
+        "addr",
+        "ip地址"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "ip -br addr"
+        ]
+      }
+    },
+    {
+      "id": "linux.ip_link",
+      "category": "Linux 网络",
+      "title": "查看网卡物理状态",
+      "keywords": [
+        "ip link",
+        "网卡",
+        "down"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "ip -s link"
+        ]
+      }
+    },
+    {
+      "id": "linux.route",
+      "category": "Linux 网络",
+      "title": "查看路由表",
+      "keywords": [
+        "route",
+        "路由",
+        "网关"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "ip route"
+        ]
+      }
+    },
+    {
+      "id": "linux.ping",
+      "category": "Linux 网络",
+      "title": "连通性测试",
+      "keywords": [
+        "ping",
+        "不通",
+        "丢包"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "host"
+        ],
+        "ex": {
+          "host": "8.8.8.8"
+        }
+      },
+      "config": {
+        "linux": [
+          "ping -c 4 -W 2 {{host}}"
+        ]
+      }
+    },
+    {
+      "id": "linux.tracepath",
+      "category": "Linux 网络",
+      "title": "路由追踪",
+      "keywords": [
+        "traceroute",
+        "tracepath",
+        "跳数"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "host"
+        ],
+        "ex": {
+          "host": "10.0.0.1"
+        }
+      },
+      "config": {
+        "linux": [
+          "tracepath -m 15 {{host}}"
+        ]
+      }
+    },
+    {
+      "id": "linux.ss",
+      "category": "Linux 网络",
+      "title": "查看监听端口与对应进程",
+      "keywords": [
+        "ss",
+        "netstat",
+        "端口"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "ss -lntup"
+        ]
+      }
+    },
+    {
+      "id": "linux.dig",
+      "category": "Linux 网络",
+      "title": "DNS 解析测试",
+      "keywords": [
+        "dig",
+        "nslookup",
+        "dns"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "domain"
+        ],
+        "opt": [
+          "dns"
+        ],
+        "ex": {
+          "domain": "example.com",
+          "dns": "223.5.5.5"
+        }
+      },
+      "config": {
+        "linux": [
+          "dig +short {{domain}}[[ @{{dns}}]]"
+        ]
+      }
+    },
+    {
+      "id": "linux.curl_test",
+      "category": "Linux 网络",
+      "title": "HTTP 接口连通性测试",
+      "keywords": [
+        "curl",
+        "http",
+        "接口"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "url"
+        ],
+        "ex": {
+          "url": "http://127.0.0.1:8080/health"
+        }
+      },
+      "config": {
+        "linux": [
+          "curl -sS -I --max-time 5 {{url}}"
+        ]
+      }
+    },
+    {
+      "id": "linux.tcpdump",
+      "category": "Linux 网络",
+      "title": "抓包（按主机过滤）",
+      "keywords": [
+        "tcpdump",
+        "抓包",
+        "丢包"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "iface",
+          "host"
+        ],
+        "ex": {
+          "iface": "eth0",
+          "host": "10.0.0.5"
+        }
+      },
+      "config": {
+        "linux": [
+          "tcpdump -i {{iface}} -nn host {{host}} -c 30"
+        ]
+      },
+      "note": "只抓 30 个包就停，避免刷屏；需要 root。"
+    },
+    {
+      "id": "linux.ethtool",
+      "category": "Linux 网络",
+      "title": "查看网卡速率与双工",
+      "keywords": [
+        "ethtool",
+        "速率",
+        "双工",
+        "丢包"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "iface"
+        ],
+        "ex": {
+          "iface": "eth0"
+        }
+      },
+      "config": {
+        "linux": [
+          "ethtool {{iface}}"
+        ]
+      },
+      "note": "看 Speed/Duplex 是否与对端一致，不一致会大量丢包。"
+    },
+    {
+      "id": "linux.bond_status",
+      "category": "Linux 网络",
+      "title": "查看 bond 绑定状态",
+      "keywords": [
+        "bond",
+        "链路聚合",
+        "双网卡"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "cat /proc/net/bonding/bond0 2>/dev/null || ls /proc/net/bonding/"
+        ]
+      }
+    },
+    {
+      "id": "linux.df",
+      "category": "Linux 磁盘",
+      "title": "查看磁盘使用率",
+      "keywords": [
+        "df",
+        "磁盘满",
+        "空间"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "df -hT"
+        ]
+      }
+    },
+    {
+      "id": "linux.du",
+      "category": "Linux 磁盘",
+      "title": "查看目录占用排行",
+      "keywords": [
+        "du",
+        "目录大小",
+        "占满"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [],
+        "opt": [
+          "path"
+        ],
+        "ex": {
+          "path": "/var"
+        }
+      },
+      "defaults": {
+        "path": "/var"
+      },
+      "config": {
+        "linux": [
+          "du -sh {{path}}/* 2>/dev/null | sort -h | tail -20"
+        ]
+      }
+    },
+    {
+      "id": "linux.inode",
+      "category": "Linux 磁盘",
+      "title": "查看 inode 使用率",
+      "keywords": [
+        "inode",
+        "磁盘满",
+        "文件数"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "df -i"
+        ]
+      },
+      "note": "空间没满但写不进去，多半是 inode 用尽。"
+    },
+    {
+      "id": "linux.lsblk",
+      "category": "Linux 磁盘",
+      "title": "查看块设备与分区",
+      "keywords": [
+        "lsblk",
+        "磁盘",
+        "分区"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "lsblk -o NAME,SIZE,TYPE,FSTYPE,MOUNTPOINT"
+        ]
+      }
+    },
+    {
+      "id": "linux.smart",
+      "category": "Linux 磁盘",
+      "title": "查看硬盘 SMART 健康",
+      "keywords": [
+        "smartctl",
+        "硬盘",
+        "坏道"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "disk"
+        ],
+        "ex": {
+          "disk": "/dev/sda"
+        }
+      },
+      "config": {
+        "linux": [
+          "smartctl -H -A {{disk}}"
+        ]
+      }
+    },
+    {
+      "id": "linux.dmesg",
+      "category": "Linux 日志",
+      "title": "查看内核日志（硬件/驱动报错）",
+      "keywords": [
+        "dmesg",
+        "内核",
+        "报错"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "dmesg -T | tail -60"
+        ]
+      }
+    },
+    {
+      "id": "linux.auth_log",
+      "category": "Linux 日志",
+      "title": "查看登录与认证日志",
+      "keywords": [
+        "auth.log",
+        "secure",
+        "登录失败",
+        "爆破"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "tail -n 80 /var/log/auth.log 2>/dev/null || tail -n 80 /var/log/secure"
+        ]
+      }
+    },
+    {
+      "id": "linux.journal_tail",
+      "category": "Linux 日志",
+      "title": "查看系统日志（最近 100 行）",
+      "keywords": [
+        "journalctl",
+        "系统日志"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "journalctl -xe -n 100 --no-pager"
+        ]
+      }
+    },
+    {
+      "id": "linux.log_size",
+      "category": "Linux 日志",
+      "title": "按大小排日志文件",
+      "keywords": [
+        "日志",
+        "占用",
+        "清理"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "du -ah /var/log 2>/dev/null | sort -h | tail -20"
+        ]
+      }
+    },
+    {
+      "id": "linux.apt_update",
+      "category": "Linux 软件包",
+      "title": "刷新软件源并列出可升级包",
+      "keywords": [
+        "apt",
+        "update",
+        "升级"
+      ],
+      "risk": "medium",
+      "config": {
+        "linux": [
+          "apt update && apt list --upgradable 2>/dev/null | head -40"
+        ]
+      }
+    },
+    {
+      "id": "linux.apt_install",
+      "category": "Linux 软件包",
+      "title": "安装软件包",
+      "keywords": [
+        "apt",
+        "install",
+        "安装"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "pkg"
+        ],
+        "ex": {
+          "pkg": "tcpdump"
+        }
+      },
+      "config": {
+        "linux": [
+          "apt install -y {{pkg}}"
+        ]
+      },
+      "verify": {
+        "linux": [
+          "dpkg -l | grep {{pkg}}"
+        ]
+      },
+      "note": "CentOS 用 yum/dnf install，把命令里的 apt 换掉即可。"
+    },
+    {
+      "id": "linux.dpkg_list",
+      "category": "Linux 软件包",
+      "title": "查找已安装的软件包",
+      "keywords": [
+        "dpkg",
+        "rpm",
+        "已安装"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "pkg"
+        ],
+        "ex": {
+          "pkg": "nginx"
+        }
+      },
+      "config": {
+        "linux": [
+          "dpkg -l | grep -i {{pkg}} || rpm -qa | grep -i {{pkg}}"
+        ]
+      }
+    },
+    {
+      "id": "linux.user_add",
+      "category": "Linux 用户",
+      "title": "新建用户",
+      "keywords": [
+        "useradd",
+        "新建用户"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "user"
+        ],
+        "ex": {
+          "user": "ops"
+        }
+      },
+      "config": {
+        "linux": [
+          "useradd -m -s /bin/bash {{user}}"
+        ]
+      },
+      "verify": {
+        "linux": [
+          "id {{user}}"
+        ]
+      }
+    },
+    {
+      "id": "linux.user_del",
+      "category": "Linux 用户",
+      "title": "删除用户（保留家目录）",
+      "keywords": [
+        "userdel",
+        "删除用户"
+      ],
+      "risk": "high",
+      "params": {
+        "req": [
+          "user"
+        ],
+        "ex": {
+          "user": "ops"
+        }
+      },
+      "config": {
+        "linux": [
+          "userdel {{user}}"
+        ]
+      },
+      "note": "确需连带家目录再手动 rm -rf /home/<user>。"
+    },
+    {
+      "id": "linux.passwd",
+      "category": "Linux 用户",
+      "title": "重置用户密码",
+      "keywords": [
+        "passwd",
+        "改密码"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "user"
+        ],
+        "ex": {
+          "user": "ops"
+        }
+      },
+      "config": {
+        "linux": [
+          "passwd {{user}}"
+        ]
+      }
+    },
+    {
+      "id": "linux.sudoers",
+      "category": "Linux 用户",
+      "title": "把用户加入 sudo 组",
+      "keywords": [
+        "sudo",
+        "提权",
+        "usermod"
+      ],
+      "risk": "high",
+      "params": {
+        "req": [
+          "user"
+        ],
+        "ex": {
+          "user": "ops"
+        }
+      },
+      "config": {
+        "linux": [
+          "usermod -aG sudo {{user}} || usermod -aG wheel {{user}}"
+        ]
+      },
+      "verify": {
+        "linux": [
+          "groups {{user}}"
+        ]
+      }
+    },
+    {
+      "id": "linux.who_last",
+      "category": "Linux 用户",
+      "title": "查看当前登录与最近登录",
+      "keywords": [
+        "who",
+        "last",
+        "在线用户"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "who; echo '---'; last -n 15"
+        ]
+      }
+    },
+    {
+      "id": "linux.crontab_list",
+      "category": "Linux 定时任务",
+      "title": "查看定时任务",
+      "keywords": [
+        "crontab",
+        "定时任务"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "crontab -l; echo '--- system ---'; ls -l /etc/cron.d/ 2>/dev/null"
+        ]
+      }
+    },
+    {
+      "id": "linux.cron_log",
+      "category": "Linux 定时任务",
+      "title": "查看 cron 执行日志",
+      "keywords": [
+        "cron",
+        "日志",
+        "没执行"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "grep -i cron /var/log/syslog 2>/dev/null | tail -30 || journalctl -u cron -n 30 --no-pager"
+        ]
+      }
+    },
+    {
+      "id": "linux.ufw_status",
+      "category": "Linux 防火墙",
+      "title": "查看 ufw 防火墙状态",
+      "keywords": [
+        "ufw",
+        "防火墙"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "ufw status verbose"
+        ]
+      }
+    },
+    {
+      "id": "linux.ufw_allow",
+      "category": "Linux 防火墙",
+      "title": "放行端口（ufw）",
+      "keywords": [
+        "ufw",
+        "放行",
+        "端口"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "port"
+        ],
+        "opt": [
+          "proto"
+        ],
+        "ex": {
+          "port": "8080",
+          "proto": "tcp"
+        }
+      },
+      "defaults": {
+        "proto": "tcp"
+      },
+      "config": {
+        "linux": [
+          "ufw allow {{port}}/{{proto}}"
+        ]
+      },
+      "verify": {
+        "linux": [
+          "ufw status | grep {{port}}"
+        ]
+      }
+    },
+    {
+      "id": "linux.firewalld_list",
+      "category": "Linux 防火墙",
+      "title": "查看 firewalld 规则",
+      "keywords": [
+        "firewalld",
+        "firewall-cmd",
+        "规则"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "firewall-cmd --list-all 2>/dev/null || echo 'firewalld 未安装'"
+        ]
+      }
+    },
+    {
+      "id": "linux.iptables_list",
+      "category": "Linux 防火墙",
+      "title": "查看 iptables / nftables 规则",
+      "keywords": [
+        "iptables",
+        "nft",
+        "规则"
+      ],
+      "risk": "read-only",
+      "config": {
+        "linux": [
+          "iptables -S 2>/dev/null || nft list ruleset"
+        ]
+      }
+    },
+    {
+      "id": "linux.ssh_login",
+      "category": "Linux 远程",
+      "title": "SSH 登录到远程主机",
+      "keywords": [
+        "ssh",
+        "远程",
+        "登录"
+      ],
+      "risk": "low",
+      "params": {
+        "req": [
+          "user",
+          "host"
+        ],
+        "opt": [
+          "port"
+        ],
+        "ex": {
+          "user": "root",
+          "host": "10.0.0.5",
+          "port": "22"
+        }
+      },
+      "defaults": {
+        "port": "22"
+      },
+      "config": {
+        "linux": [
+          "ssh -p {{port}} {{user}}@{{host}}"
+        ]
+      }
+    },
+    {
+      "id": "win.os_info",
+      "category": "Windows 系统",
+      "title": "查看系统版本与主机信息",
+      "keywords": [
+        "系统版本",
+        "winver",
+        "computerinfo"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "Get-ComputerInfo | Select-Object CsName,OsName,OsVersion,OsBuildNumber | Format-List"
+        ]
+      }
+    },
+    {
+      "id": "win.uptime",
+      "category": "Windows 系统",
+      "title": "查看开机时长",
+      "keywords": [
+        "uptime",
+        "开机时间",
+        "重启"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "(Get-CimInstance Win32_OperatingSystem).LastBootUpTime"
+        ]
+      }
+    },
+    {
+      "id": "win.hostname",
+      "category": "Windows 系统",
+      "title": "查看主机名与域",
+      "keywords": [
+        "hostname",
+        "域名",
+        "主机名"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "hostname; whoami /fqdn"
+        ]
+      }
+    },
+    {
+      "id": "win.ipconfig",
+      "category": "Windows 网络",
+      "title": "查看 IP / DNS / 网关",
+      "keywords": [
+        "ipconfig",
+        "ip地址",
+        "dns"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "ipconfig /all"
+        ]
+      }
+    },
+    {
+      "id": "win.ping",
+      "category": "Windows 网络",
+      "title": "连通性测试",
+      "keywords": [
+        "ping",
+        "不通",
+        "丢包"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "host"
+        ],
+        "ex": {
+          "host": "10.0.0.1"
+        }
+      },
+      "config": {
+        "windows": [
+          "ping -n 4 {{host}}"
+        ]
+      }
+    },
+    {
+      "id": "win.route",
+      "category": "Windows 网络",
+      "title": "查看路由表",
+      "keywords": [
+        "route",
+        "路由",
+        "网关"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "route print -4"
+        ]
+      }
+    },
+    {
+      "id": "win.dns",
+      "category": "Windows 网络",
+      "title": "DNS 解析测试",
+      "keywords": [
+        "nslookup",
+        "dns",
+        "解析"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "domain"
+        ],
+        "opt": [
+          "dns"
+        ],
+        "ex": {
+          "domain": "example.com",
+          "dns": "223.5.5.5"
+        }
+      },
+      "config": {
+        "windows": [
+          "nslookup {{domain}}[[ {{dns}}]]"
+        ]
+      }
+    },
+    {
+      "id": "win.test_port",
+      "category": "Windows 网络",
+      "title": "测试远端端口是否通",
+      "keywords": [
+        "telnet",
+        "端口",
+        "通不通"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "host",
+          "port"
+        ],
+        "ex": {
+          "host": "10.0.0.5",
+          "port": "445"
+        }
+      },
+      "config": {
+        "windows": [
+          "Test-NetConnection -ComputerName {{host}} -Port {{port}} -InformationLevel Detailed"
+        ]
+      }
+    },
+    {
+      "id": "win.netstat",
+      "category": "Windows 网络",
+      "title": "查看监听端口与连接",
+      "keywords": [
+        "netstat",
+        "端口",
+        "连接"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "netstat -ano | Select-String 'LISTENING|ESTABLISHED'"
+        ]
+      }
+    },
+    {
+      "id": "win.arp",
+      "category": "Windows 网络",
+      "title": "查看 ARP 表",
+      "keywords": [
+        "arp",
+        "mac",
+        "二层"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "arp -a"
+        ]
+      }
+    },
+    {
+      "id": "win.svc_running",
+      "category": "Windows 服务",
+      "title": "列出运行中的服务",
+      "keywords": [
+        "服务",
+        "service",
+        "运行"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "Get-Service | Where-Object Status -eq 'Running' | Sort-Object DisplayName"
+        ]
+      }
+    },
+    {
+      "id": "win.svc_status",
+      "category": "Windows 服务",
+      "title": "查看指定服务状态",
+      "keywords": [
+        "服务",
+        "status"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "name"
+        ],
+        "ex": {
+          "name": "Spooler"
+        }
+      },
+      "config": {
+        "windows": [
+          "Get-Service -Name {{name}} | Format-List *"
+        ]
+      }
+    },
+    {
+      "id": "win.svc_restart",
+      "category": "Windows 服务",
+      "title": "重启服务",
+      "keywords": [
+        "服务",
+        "restart",
+        "重启"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "name"
+        ],
+        "ex": {
+          "name": "Spooler"
+        }
+      },
+      "config": {
+        "windows": [
+          "Restart-Service -Name {{name}} -Force"
+        ]
+      },
+      "verify": {
+        "windows": [
+          "Get-Service -Name {{name}}"
+        ]
+      }
+    },
+    {
+      "id": "win.proc_top",
+      "category": "Windows 进程",
+      "title": "内存占用最高的 10 个进程",
+      "keywords": [
+        "进程",
+        "内存",
+        "卡"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "Get-Process | Sort-Object WS -Descending | Select-Object -First 10 Name,Id,WS"
+        ]
+      },
+      "note": "WS 是工作集字节数，除以 1MB 即占用 MB。"
+    },
+    {
+      "id": "win.proc_kill",
+      "category": "Windows 进程",
+      "title": "结束进程",
+      "keywords": [
+        "进程",
+        "kill",
+        "结束"
+      ],
+      "risk": "high",
+      "params": {
+        "req": [
+          "pid"
+        ],
+        "ex": {
+          "pid": "4321"
+        }
+      },
+      "config": {
+        "windows": [
+          "Stop-Process -Id {{pid}} -Force"
+        ]
+      }
+    },
+    {
+      "id": "win.disk",
+      "category": "Windows 磁盘",
+      "title": "查看各盘剩余空间",
+      "keywords": [
+        "磁盘",
+        "空间",
+        "df"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "Get-Volume | Select-Object DriveLetter,FileSystemLabel,SizeRemaining,Size"
+        ]
+      },
+      "note": "SizeRemaining / Size 单位是字节；0 表示盘符未挂载卷。"
+    },
+    {
+      "id": "win.folder_size",
+      "category": "Windows 磁盘",
+      "title": "统计目录大小",
+      "keywords": [
+        "目录大小",
+        "占用"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "path"
+        ],
+        "ex": {
+          "path": "C:\\Windows\\Logs"
+        }
+      },
+      "config": {
+        "windows": [
+          "Get-ChildItem {{path}} -Recurse -File -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum"
+        ]
+      },
+      "note": "返回 Sum 字段，单位字节，除以 1GB 得 GB。"
+    },
+    {
+      "id": "win.find_large",
+      "category": "Windows 文件",
+      "title": "找目录下最大的 10 个文件",
+      "keywords": [
+        "大文件",
+        "磁盘满"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [],
+        "opt": [
+          "path"
+        ],
+        "ex": {
+          "path": "C:\\"
+        }
+      },
+      "defaults": {
+        "path": "C:\\"
+      },
+      "config": {
+        "windows": [
+          "Get-ChildItem {{path}} -Recurse -File -ErrorAction SilentlyContinue | Sort-Object Length -Descending | Select-Object -First 10 FullName,Length"
+        ]
+      },
+      "note": "Length 单位字节，按大小降序，取前 10 个。"
+    },
+    {
+      "id": "win.share_list",
+      "category": "Windows 共享",
+      "title": "查看 SMB 共享",
+      "keywords": [
+        "共享",
+        "smb",
+        "net share"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "Get-SmbShare | Select-Object Name,Path,Description"
+        ]
+      }
+    },
+    {
+      "id": "win.share_add",
+      "category": "Windows 共享",
+      "title": "新建 SMB 共享",
+      "keywords": [
+        "共享",
+        "新建",
+        "smb"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "name",
+          "path"
+        ],
+        "ex": {
+          "name": "share01",
+          "path": "D:\\share"
+        }
+      },
+      "config": {
+        "windows": [
+          "New-SmbShare -Name {{name}} -Path {{path}} -FullAccess Everyone"
+        ]
+      },
+      "verify": {
+        "windows": [
+          "Get-SmbShare -Name {{name}}"
+        ]
+      }
+    },
+    {
+      "id": "win.share_remove",
+      "category": "Windows 共享",
+      "title": "删除 SMB 共享",
+      "keywords": [
+        "共享",
+        "删除"
+      ],
+      "risk": "high",
+      "params": {
+        "req": [
+          "name"
+        ],
+        "ex": {
+          "name": "share01"
+        }
+      },
+      "config": {
+        "windows": [
+          "Remove-SmbShare -Name {{name}} -Force"
+        ]
+      }
+    },
+    {
+      "id": "win.event_system",
+      "category": "Windows 日志",
+      "title": "查看系统日志（最近 30 条）",
+      "keywords": [
+        "事件",
+        "日志",
+        "event"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "Get-WinEvent -LogName System -MaxEvents 30 | Select-Object TimeCreated,Id,LevelDisplayName,Message | Format-Table -Wrap"
+        ]
+      }
+    },
+    {
+      "id": "win.event_app",
+      "category": "Windows 日志",
+      "title": "查看应用日志（最近 30 条）",
+      "keywords": [
+        "事件",
+        "应用日志"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "Get-WinEvent -LogName Application -MaxEvents 30 | Select-Object TimeCreated,Id,LevelDisplayName,Message | Format-Table -Wrap"
+        ]
+      }
+    },
+    {
+      "id": "win.event_logon",
+      "category": "Windows 日志",
+      "title": "查看最近登录事件",
+      "keywords": [
+        "登录",
+        "4624",
+        "审计"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "Get-WinEvent -FilterHashtable @{LogName='Security';Id=4624} -MaxEvents 20 | Select-Object TimeCreated,Message | Format-Table -Wrap"
+        ]
+      }
+    },
+    {
+      "id": "win.fw_profiles",
+      "category": "Windows 防火墙",
+      "title": "查看防火墙配置状态",
+      "keywords": [
+        "防火墙",
+        "firewall"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "Get-NetFirewallProfile | Select-Object Name,Enabled,DefaultInboundAction,DefaultOutboundAction"
+        ]
+      }
+    },
+    {
+      "id": "win.fw_rule_add",
+      "category": "Windows 防火墙",
+      "title": "放行入站端口",
+      "keywords": [
+        "防火墙",
+        "放行",
+        "端口"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "name",
+          "port"
+        ],
+        "ex": {
+          "name": "web8080",
+          "port": "8080"
+        }
+      },
+      "config": {
+        "windows": [
+          "New-NetFirewallRule -DisplayName \"{{name}}\" -Direction Inbound -Protocol TCP -LocalPort {{port}} -Action Allow"
+        ]
+      },
+      "verify": {
+        "windows": [
+          "Get-NetFirewallRule -DisplayName \"{{name}}\""
+        ]
+      }
+    },
+    {
+      "id": "win.fw_rule_remove",
+      "category": "Windows 防火墙",
+      "title": "删除防火墙规则",
+      "keywords": [
+        "防火墙",
+        "删除规则"
+      ],
+      "risk": "high",
+      "params": {
+        "req": [
+          "name"
+        ],
+        "ex": {
+          "name": "web8080"
+        }
+      },
+      "config": {
+        "windows": [
+          "Remove-NetFirewallRule -DisplayName \"{{name}}\""
+        ]
+      }
+    },
+    {
+      "id": "win.user_list",
+      "category": "Windows 用户",
+      "title": "查看本地用户",
+      "keywords": [
+        "用户",
+        "账号"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "Get-LocalUser | Select-Object Name,Enabled,LastLogon"
+        ]
+      }
+    },
+    {
+      "id": "win.user_add",
+      "category": "Windows 用户",
+      "title": "新建本地用户",
+      "keywords": [
+        "用户",
+        "新建"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "user"
+        ],
+        "ex": {
+          "user": "ops"
+        }
+      },
+      "config": {
+        "windows": [
+          "New-LocalUser -Name {{user}} -Password (Read-Host -AsSecureString '输入密码') -PasswordNeverExpires"
+        ]
+      }
+    },
+    {
+      "id": "win.user_disable",
+      "category": "Windows 用户",
+      "title": "禁用本地用户",
+      "keywords": [
+        "用户",
+        "禁用"
+      ],
+      "risk": "high",
+      "params": {
+        "req": [
+          "user"
+        ],
+        "ex": {
+          "user": "ops"
+        }
+      },
+      "config": {
+        "windows": [
+          "Disable-LocalUser -Name {{user}}"
+        ]
+      }
+    },
+    {
+      "id": "win.task_list",
+      "category": "Windows 计划任务",
+      "title": "查看计划任务",
+      "keywords": [
+        "计划任务",
+        "task",
+        "定时"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "Get-ScheduledTask | Select-Object TaskName,State | Sort-Object TaskName"
+        ]
+      }
+    },
+    {
+      "id": "win.task_run",
+      "category": "Windows 计划任务",
+      "title": "立即运行计划任务",
+      "keywords": [
+        "计划任务",
+        "运行"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "name"
+        ],
+        "ex": {
+          "name": "BackupDaily"
+        }
+      },
+      "config": {
+        "windows": [
+          "Start-ScheduledTask -TaskName {{name}}"
+        ]
+      }
+    },
+    {
+      "id": "win.update_check",
+      "category": "Windows 更新",
+      "title": "检查未安装的系统更新",
+      "keywords": [
+        "更新",
+        "补丁",
+        "windows update"
+      ],
+      "risk": "read-only",
+      "config": {
+        "windows": [
+          "(New-Object -ComObject Microsoft.Update.Session).CreateUpdateSearcher().Search('IsInstalled=0').Updates | Select-Object Title"
+        ]
+      }
+    },
+    {
+      "id": "win.sfc_scan",
+      "category": "Windows 更新",
+      "title": "系统文件完整性检查",
+      "keywords": [
+        "sfc",
+        "系统文件",
+        "损坏"
+      ],
+      "risk": "medium",
+      "config": {
+        "windows": [
+          "sfc /scannow"
+        ]
+      },
+      "note": "跑完看 CBS.log 里是否有无法修复的文件。"
+    },
+    {
+      "id": "win.reboot",
+      "category": "Windows 更新",
+      "title": "重启服务器",
+      "keywords": [
+        "重启",
+        "reboot"
+      ],
+      "risk": "danger",
+      "params": {
+        "req": [],
+        "opt": [
+          "delay"
+        ],
+        "ex": {
+          "delay": "60"
+        }
+      },
+      "defaults": {
+        "delay": "60"
+      },
+      "config": {
+        "windows": [
+          "shutdown /r /t {{delay}} /c '计划重启，请保存工作'"
+        ]
+      },
+      "note": "生产环境先确认业务已切走；/t 60 留 60 秒缓冲。"
+    },
+    {
+      "id": "nas.df",
+      "category": "NAS 存储",
+      "title": "查看卷空间使用",
+      "keywords": [
+        "df",
+        "空间",
+        "卷"
+      ],
+      "risk": "read-only",
+      "config": {
+        "nas": [
+          "df -hT"
+        ]
+      }
+    },
+    {
+      "id": "nas.btrfs_usage",
+      "category": "NAS 存储",
+      "title": "查看 btrfs 卷占用（群晖常用）",
+      "keywords": [
+        "btrfs",
+        "卷",
+        "空间"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [],
+        "opt": [
+          "volume"
+        ],
+        "ex": {
+          "volume": "/volume1"
+        }
+      },
+      "defaults": {
+        "volume": "/volume1"
+      },
+      "config": {
+        "nas": [
+          "btrfs filesystem usage {{volume}} 2>/dev/null || df -h {{volume}}"
+        ]
+      }
+    },
+    {
+      "id": "nas.lsblk",
+      "category": "NAS 存储",
+      "title": "查看磁盘与分区",
+      "keywords": [
+        "磁盘",
+        "分区",
+        "lsblk"
+      ],
+      "risk": "read-only",
+      "config": {
+        "nas": [
+          "lsblk -o NAME,SIZE,TYPE,FSTYPE,MODEL"
+        ]
+      }
+    },
+    {
+      "id": "nas.mdstat",
+      "category": "NAS 存储",
+      "title": "查看 RAID 阵列状态",
+      "keywords": [
+        "raid",
+        "mdstat",
+        "降级"
+      ],
+      "risk": "read-only",
+      "config": {
+        "nas": [
+          "cat /proc/mdstat"
+        ]
+      },
+      "note": "看到 [_U] 表示降级，需要尽快换盘重建。"
+    },
+    {
+      "id": "nas.smart",
+      "category": "NAS 存储",
+      "title": "查看硬盘 SMART 健康",
+      "keywords": [
+        "smart",
+        "坏道",
+        "硬盘"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "disk"
+        ],
+        "ex": {
+          "disk": "/dev/sda"
+        }
+      },
+      "config": {
+        "nas": [
+          "smartctl -H -A {{disk}}"
+        ]
+      }
+    },
+    {
+      "id": "nas.syno_share",
+      "category": "NAS 共享",
+      "title": "列出共享文件夹（群晖）",
+      "keywords": [
+        "共享",
+        "synology",
+        "synoshare"
+      ],
+      "risk": "read-only",
+      "config": {
+        "nas": [
+          "synoshare --enum ALL 2>/dev/null || ls /volume1"
+        ]
+      }
+    },
+    {
+      "id": "nas.syno_quota",
+      "category": "NAS 共享",
+      "title": "查看用户配额（群晖）",
+      "keywords": [
+        "配额",
+        "quota",
+        "空间"
+      ],
+      "risk": "read-only",
+      "params": {
+        "req": [
+          "user"
+        ],
+        "ex": {
+          "user": "ops"
+        }
+      },
+      "config": {
+        "nas": [
+          "synoquota --user {{user}} 2>/dev/null || quota -u {{user}} 2>/dev/null || echo '该型号不支持命令行查配额'"
+        ]
+      }
+    },
+    {
+      "id": "nas.syno_snapshot",
+      "category": "NAS 快照",
+      "title": "列出快照（群晖）",
+      "keywords": [
+        "快照",
+        "snapshot",
+        "恢复"
+      ],
+      "risk": "read-only",
+      "config": {
+        "nas": [
+          "synosnap --list 2>/dev/null || btrfs subvolume list /volume1 | head -30"
+        ]
+      }
+    },
+    {
+      "id": "nas.syno_snap_create",
+      "category": "NAS 快照",
+      "title": "给共享目录打快照（群晖）",
+      "keywords": [
+        "快照",
+        "备份",
+        "新建"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "share"
+        ],
+        "ex": {
+          "share": "share01"
+        }
+      },
+      "config": {
+        "nas": [
+          "synosnap --snapcreate --share {{share}}"
+        ]
+      },
+      "note": "需已启用快照套件；执行前确认卷剩余空间足够。"
+    },
+    {
+      "id": "nas.syno_user",
+      "category": "NAS 用户",
+      "title": "列出 NAS 用户（群晖）",
+      "keywords": [
+        "用户",
+        "账号",
+        "synouser"
+      ],
+      "risk": "read-only",
+      "config": {
+        "nas": [
+          "synouser --enum 2>/dev/null || cat /etc/passwd | awk -F: '$3>=1000 {print $1}'"
+        ]
+      }
+    },
+    {
+      "id": "nas.syno_pkg",
+      "category": "NAS 系统",
+      "title": "查看套件运行状态（群晖）",
+      "keywords": [
+        "套件",
+        "package",
+        "运行"
+      ],
+      "risk": "read-only",
+      "config": {
+        "nas": [
+          "synopkg list --name 2>/dev/null | head -30"
+        ]
+      }
+    },
+    {
+      "id": "nas.syno_service",
+      "category": "NAS 系统",
+      "title": "查看 NAS 服务状态（群晖）",
+      "keywords": [
+        "服务",
+        "状态",
+        "synoservice"
+      ],
+      "risk": "read-only",
+      "config": {
+        "nas": [
+          "synoservice --status 2>/dev/null | head -40"
+        ]
+      }
+    },
+    {
+      "id": "nas.syno_service_restart",
+      "category": "NAS 系统",
+      "title": "重启 NAS 服务（群晖）",
+      "keywords": [
+        "服务",
+        "重启"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "service"
+        ],
+        "ex": {
+          "service": "smbd"
+        }
+      },
+      "config": {
+        "nas": [
+          "synoservice --restart {{service}}"
+        ]
+      },
+      "verify": {
+        "nas": [
+          "synoservice --status | grep -i {{service}}"
+        ]
+      }
+    },
+    {
+      "id": "nas.net",
+      "category": "NAS 系统",
+      "title": "查看网卡与 IP",
+      "keywords": [
+        "网络",
+        "ip",
+        "网卡"
+      ],
+      "risk": "read-only",
+      "config": {
+        "nas": [
+          "ip -br addr"
+        ]
+      }
+    },
+    {
+      "id": "nas.nfs_exports",
+      "category": "NAS 共享",
+      "title": "查看 NFS 导出列表",
+      "keywords": [
+        "nfs",
+        "导出",
+        "挂载"
+      ],
+      "risk": "read-only",
+      "config": {
+        "nas": [
+          "cat /etc/exports 2>/dev/null || echo '未配置 NFS'"
+        ]
+      }
+    },
+    {
+      "id": "nas.smb_status",
+      "category": "NAS 共享",
+      "title": "查看 SMB 当前连接",
+      "keywords": [
+        "smb",
+        "连接",
+        "共享"
+      ],
+      "risk": "read-only",
+      "config": {
+        "nas": [
+          "smbstatus 2>/dev/null | head -30 || echo 'smbstatus 不可用'"
+        ]
+      }
+    },
+    {
+      "id": "nas.log_messages",
+      "category": "NAS 日志",
+      "title": "查看系统日志",
+      "keywords": [
+        "日志",
+        "messages",
+        "报错"
+      ],
+      "risk": "read-only",
+      "config": {
+        "nas": [
+          "tail -n 100 /var/log/messages 2>/dev/null || tail -n 100 /var/log/syslog"
+        ]
+      }
+    },
+    {
+      "id": "nas.temp",
+      "category": "NAS 系统",
+      "title": "查看温度传感器",
+      "keywords": [
+        "温度",
+        "过热",
+        "风扇"
+      ],
+      "risk": "read-only",
+      "config": {
+        "nas": [
+          "for z in /sys/class/thermal/thermal_zone*; do echo -n \"$z \"; cat $z/temp; done 2>/dev/null"
+        ]
+      },
+      "note": "数值除以 1000 得摄氏度；持续 60 度以上要检查风扇和灰尘。"
+    }
+  ]
+}

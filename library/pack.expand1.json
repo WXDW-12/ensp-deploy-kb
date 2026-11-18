@@ -1,0 +1,505 @@
+{
+  "pack": "expand1",
+  "meta": {
+    "name": "扩展包 1：接口 / VLAN / 链路聚合",
+    "version": "0.1.0",
+    "updated": "2026-11-06"
+  },
+  "commands": [
+    {
+      "id": "iface.desc",
+      "category": "接口",
+      "title": "配置接口描述",
+      "keywords": [
+        "description",
+        "描述",
+        "备注"
+      ],
+      "risk": "low",
+      "params": {
+        "req": [
+          "iface",
+          "desc"
+        ],
+        "ex": {
+          "iface": "GigabitEthernet0/0/1",
+          "desc": "To-Core-SW"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "interface {{iface}}",
+          "description {{desc}}",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "interface {{iface}}",
+          "description {{desc}}",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "interface {{iface}}",
+          "description {{desc}}",
+          "quit"
+        ]
+      },
+      "verify": {
+        "huawei": [
+          "display interface description | include {{iface}}"
+        ],
+        "cisco": [
+          "show interfaces description | include {{iface}}"
+        ],
+        "h3c": [
+          "display interface description | include {{iface}}"
+        ]
+      },
+      "note": "给端口写清对端设备/用途，排障和拓扑推断都靠它（拓扑的「接口描述推断」会读这行）。"
+    },
+    {
+      "id": "iface.port_down",
+      "category": "接口",
+      "title": "关闭接口",
+      "keywords": [
+        "shutdown",
+        "关闭端口",
+        "禁用"
+      ],
+      "risk": "high",
+      "params": {
+        "req": [
+          "iface"
+        ],
+        "ex": {
+          "iface": "GigabitEthernet0/0/2"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "interface {{iface}}",
+          "shutdown",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "interface {{iface}}",
+          "shutdown",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "interface {{iface}}",
+          "shutdown",
+          "quit"
+        ]
+      },
+      "undo": {
+        "huawei": [
+          "system-view",
+          "interface {{iface}}",
+          "undo shutdown",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "interface {{iface}}",
+          "no shutdown",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "interface {{iface}}",
+          "undo shutdown",
+          "quit"
+        ]
+      },
+      "note": "会让该口业务中断。执行前确认不是上联口。"
+    },
+    {
+      "id": "iface.undo_shutdown",
+      "category": "接口",
+      "title": "打开接口",
+      "keywords": [
+        "undo shutdown",
+        "no shutdown",
+        "启用端口"
+      ],
+      "risk": "low",
+      "params": {
+        "req": [
+          "iface"
+        ],
+        "ex": {
+          "iface": "GigabitEthernet0/0/2"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "interface {{iface}}",
+          "undo shutdown",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "interface {{iface}}",
+          "no shutdown",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "interface {{iface}}",
+          "undo shutdown",
+          "quit"
+        ]
+      }
+    },
+    {
+      "id": "iface.speed",
+      "category": "接口",
+      "title": "配置速率与双工",
+      "keywords": [
+        "speed",
+        "duplex",
+        "速率",
+        "双工"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "iface"
+        ],
+        "opt": [
+          "speed",
+          "duplex"
+        ],
+        "ex": {
+          "iface": "GigabitEthernet0/0/1",
+          "speed": "1000",
+          "duplex": "full"
+        }
+      },
+      "defaults": {
+        "speed": "auto",
+        "duplex": "auto"
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "interface {{iface}}",
+          "speed {{speed}}",
+          "duplex {{duplex}}",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "interface {{iface}}",
+          "speed {{speed}}",
+          "duplex {{duplex}}",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "interface {{iface}}",
+          "speed {{speed}}",
+          "duplex {{duplex}}",
+          "quit"
+        ]
+      },
+      "verify": {
+        "huawei": [
+          "display interface {{iface}} | include Speed|Duplex"
+        ],
+        "cisco": [
+          "show interfaces {{iface}} | include speed|duplex"
+        ],
+        "h3c": [
+          "display interface {{iface}} | include Speed|Duplex"
+        ]
+      },
+      "note": "两端必须一致，否则协商异常会大量丢包。auto 表示自协商。"
+    },
+    {
+      "id": "vlan.batch_create",
+      "category": "VLAN",
+      "title": "批量创建 VLAN",
+      "keywords": [
+        "vlan batch",
+        "批量",
+        "创建vlan"
+      ],
+      "risk": "low",
+      "params": {
+        "req": [
+          "vlans"
+        ],
+        "ex": {
+          "vlans": "10 20 30"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "vlan batch {{vlans|space}}",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "vlan {{vlans|comma}}",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "vlan {{vlans|space}}",
+          "quit"
+        ]
+      },
+      "verify": {
+        "huawei": [
+          "display vlan | include {{vlans|space}}"
+        ],
+        "cisco": [
+          "show vlan brief"
+        ],
+        "h3c": [
+          "display vlan"
+        ]
+      }
+    },
+    {
+      "id": "vlan.rename",
+      "category": "VLAN",
+      "title": "给 VLAN 命名",
+      "keywords": [
+        "vlan name",
+        "命名",
+        "备注"
+      ],
+      "risk": "low",
+      "params": {
+        "req": [
+          "vlan_id",
+          "name"
+        ],
+        "ex": {
+          "vlan_id": "10",
+          "name": "Office"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "vlan {{vlan_id}}",
+          "name {{name}}",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "vlan {{vlan_id}}",
+          "name {{name}}",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "vlan {{vlan_id}}",
+          "name {{name}}",
+          "quit"
+        ]
+      }
+    },
+    {
+      "id": "vlan.delete",
+      "category": "VLAN",
+      "title": "删除 VLAN",
+      "keywords": [
+        "undo vlan",
+        "no vlan",
+        "删除vlan"
+      ],
+      "risk": "high",
+      "params": {
+        "req": [
+          "vlan_id"
+        ],
+        "ex": {
+          "vlan_id": "10"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "undo vlan {{vlan_id}}",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "no vlan {{vlan_id}}",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "undo vlan {{vlan_id}}",
+          "quit"
+        ]
+      },
+      "note": "删除前确认没有接口在用、没有 SVI 依赖。"
+    },
+    {
+      "id": "lag.create_group",
+      "category": "链路聚合",
+      "title": "创建聚合口",
+      "keywords": [
+        "eth-trunk",
+        "port-channel",
+        "bridge-aggregation",
+        "链路聚合"
+      ],
+      "risk": "low",
+      "params": {
+        "req": [
+          "num"
+        ],
+        "ex": {
+          "num": "1"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "interface Eth-Trunk{{num}}",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "interface Port-channel{{num}}",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "interface Bridge-Aggregation{{num}}",
+          "quit"
+        ]
+      },
+      "verify": {
+        "huawei": [
+          "display eth-trunk {{num}}"
+        ],
+        "cisco": [
+          "show etherchannel {{num}} summary"
+        ],
+        "h3c": [
+          "display link-aggregation verbose"
+        ]
+      }
+    },
+    {
+      "id": "lag.mode",
+      "category": "链路聚合",
+      "title": "设置聚合模式（LACP）",
+      "keywords": [
+        "lacp",
+        "mode",
+        "聚合模式",
+        "动态"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "num"
+        ],
+        "ex": {
+          "num": "1"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "interface Eth-Trunk{{num}}",
+          "mode lacp-static",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "interface Port-channel{{num}}",
+          "exit"
+        ],
+        "h3c": [
+          "system-view",
+          "interface Bridge-Aggregation{{num}}",
+          "link-aggregation mode dynamic",
+          "quit"
+        ]
+      },
+      "verify": {
+        "huawei": [
+          "display eth-trunk {{num}}"
+        ],
+        "cisco": [
+          "show etherchannel summary"
+        ],
+        "h3c": [
+          "display link-aggregation verbose"
+        ]
+      },
+      "note": "思科的 LACP 模式是在成员口上配 channel-group <号> mode active，见下一条。"
+    },
+    {
+      "id": "lag.add_port",
+      "category": "链路聚合",
+      "title": "把端口加入聚合组",
+      "keywords": [
+        "trunkport",
+        "channel-group",
+        "link-aggregation group",
+        "加入聚合"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "port",
+          "num"
+        ],
+        "ex": {
+          "port": "GigabitEthernet0/0/1",
+          "num": "1"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "interface Eth-Trunk{{num}}",
+          "trunkport {{port}}",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "interface {{port}}",
+          "channel-group {{num}} mode active",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "interface {{port}}",
+          "port link-aggregation group {{num}}",
+          "quit"
+        ]
+      },
+      "verify": {
+        "huawei": [
+          "display eth-trunk {{num}}"
+        ],
+        "cisco": [
+          "show etherchannel summary"
+        ],
+        "h3c": [
+          "display link-aggregation summary"
+        ]
+      },
+      "note": "成员口加入前应是默认配置（清掉 VLAN/描述等），两端模式要匹配。"
+    }
+  ]
+}

@@ -1,0 +1,176 @@
+[
+ {
+  "id": 44,
+  "name": "山西广电IPTV机房",
+  "parent_id": 0,
+  "layer_id": null
+ },
+ {
+  "id": 146,
+  "name": "核心路由器",
+  "parent_id": 44,
+  "layer_id": 18
+ },
+ {
+  "id": 147,
+  "name": "核心防火墙",
+  "parent_id": 44,
+  "layer_id": 19
+ },
+ {
+  "id": 148,
+  "name": "核心交换机",
+  "parent_id": 44,
+  "layer_id": 3
+ },
+ {
+  "id": 149,
+  "name": "汇聚交换机",
+  "parent_id": 44,
+  "layer_id": 20
+ },
+ {
+  "id": 150,
+  "name": "接入交换机",
+  "parent_id": 44,
+  "layer_id": 21
+ },
+ {
+  "id": 151,
+  "name": "终端",
+  "parent_id": 44,
+  "layer_id": 22
+ },
+ {
+  "id": 166,
+  "name": "未知设备",
+  "parent_id": 0,
+  "layer_id": null
+ },
+ {
+  "id": 167,
+  "name": "终端组-RT-DC_02-C3_15-Core-NE20E-M",
+  "parent_id": 151,
+  "layer_id": null
+ },
+ {
+  "id": 168,
+  "name": "终端组-RT-DC_02-C4_15-Core-NE20E-S",
+  "parent_id": 151,
+  "layer_id": null
+ },
+ {
+  "id": 169,
+  "name": "终端组-SW-DC_01-A2&A3_40-EPG-S5720-STACK",
+  "parent_id": 151,
+  "layer_id": null
+ },
+ {
+  "id": 170,
+  "name": "终端组-SW-DC_01-B5_3&15-NAS-S7706-CSS",
+  "parent_id": 151,
+  "layer_id": null
+ },
+ {
+  "id": 171,
+  "name": "终端组-SW-DC_02-A7_18&32-BK-S7706-CSS",
+  "parent_id": 151,
+  "layer_id": null
+ },
+ {
+  "id": 172,
+  "name": "终端组-SW-DC_02-B8_41&B9_37-ZBJK-S5720-STACK",
+  "parent_id": 151,
+  "layer_id": null
+ },
+ {
+  "id": 173,
+  "name": "终端组-SW-DC_02-B9_33-ZBJK-S5720",
+  "parent_id": 151,
+  "layer_id": null
+ },
+ {
+  "id": 174,
+  "name": "终端组-SW-DC_02-B9_41-ZBJK-S5720",
+  "parent_id": 151,
+  "layer_id": null
+ },
+ {
+  "id": 175,
+  "name": "终端组-SW-DC_02-C1_39-GL-S5720",
+  "parent_id": 151,
+  "layer_id": null
+ },
+ {
+  "id": 176,
+  "name": "终端组-SW-DC_02-C8_38-ZB-S5720",
+  "parent_id": 151,
+  "layer_id": null
+ },
+ {
+  "id": 177,
+  "name": "终端组-SW-DC_02-D3_41-ZB-S5720",
+  "parent_id": 151,
+  "layer_id": null
+ },
+ {
+  "id": 178,
+  "name": "终端组-SW-DC_02-D9_41-ZB-S5731S",
+  "parent_id": 151,
+  "layer_id": null
+ },
+ {
+  "id": 179,
+  "name": "终端组-SW-DC_LT02-A5&A6_32-EPG-S7706-CSS",
+  "parent_id": 151,
+  "layer_id": null
+ },
+ {
+  "id": 180,
+  "name": "终端组-SW-DC_LT02-B5&B6_5-EPG-CE16808-CSS",
+  "parent_id": 151,
+  "layer_id": null
+ },
+ {
+  "id": 181,
+  "name": "终端组-SW-DC_LT02-I24&I25_8U-EPG-S5755-STACK",
+  "parent_id": 151,
+  "layer_id": null
+ },
+ {
+  "id": 192,
+  "name": "其余防火墙",
+  "parent_id": 44,
+  "layer_id": 13
+ },
+ {
+  "id": 194,
+  "name": "联通机房路由器",
+  "parent_id": 44,
+  "layer_id": 15
+ },
+ {
+  "id": 195,
+  "name": "联通机房防火墙",
+  "parent_id": 44,
+  "layer_id": 15
+ },
+ {
+  "id": 197,
+  "name": "EPG核心交换机",
+  "parent_id": 44,
+  "layer_id": 3
+ },
+ {
+  "id": 199,
+  "name": "OTT核心交换机",
+  "parent_id": 44,
+  "layer_id": 3
+ },
+ {
+  "id": 200,
+  "name": "eNSP测试环境",
+  "parent_id": 0,
+  "layer_id": null
+ }
+]

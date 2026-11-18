@@ -1,0 +1,284 @@
+{
+  "pack": "firewall",
+  "meta": {
+    "name": "防火墙扩展包",
+    "version": "0.1.0",
+    "updated": "2026-11-06",
+    "vendors": {
+      "usg": "华为 USG（VRP 安全）",
+      "asa": "思科 ASA（自适应安全设备）",
+      "secpath": "华三 SecPath（Comware 安全）"
+    },
+    "note": "防火墙语法与交换机差异大（安全区域/安全策略/NAT），这里是最常用的起步命令。"
+  },
+  "commands": [
+    {
+      "id": "fw.zone",
+      "category": "防火墙 区域",
+      "title": "把接口加入安全区域",
+      "keywords": [
+        "zone",
+        "安全区域",
+        "trust"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "iface"
+        ],
+        "opt": [
+          "zone"
+        ],
+        "ex": {
+          "iface": "GigabitEthernet1/0/1",
+          "zone": "trust"
+        }
+      },
+      "defaults": {
+        "zone": "trust"
+      },
+      "config": {
+        "usg": [
+          "system-view",
+          "firewall zone {{zone}}",
+          "add interface {{iface}}",
+          "quit"
+        ],
+        "asa": [
+          "configure terminal",
+          "interface {{iface}}",
+          "nameif {{zone}}",
+          "security-level 100",
+          "end"
+        ],
+        "secpath": [
+          "system-view",
+          "security-zone name {{zone}}",
+          "import interface {{iface}}",
+          "quit"
+        ]
+      },
+      "verify": {
+        "usg": [
+          "display firewall zone"
+        ],
+        "asa": [
+          "show nameif"
+        ],
+        "secpath": [
+          "display security-zone"
+        ]
+      },
+      "note": "asa 的 zone 填 nameif 名称（inside/outside/dmz）；usg/secpath 填区域名。"
+    },
+    {
+      "id": "fw.policy",
+      "category": "防火墙 策略",
+      "title": "放行一条安全策略",
+      "keywords": [
+        "security-policy",
+        "acl",
+        "放行"
+      ],
+      "risk": "high",
+      "params": {
+        "req": [
+          "src_zone",
+          "dst_zone"
+        ],
+        "opt": [
+          "action"
+        ],
+        "ex": {
+          "src_zone": "trust",
+          "dst_zone": "untrust",
+          "action": "permit"
+        }
+      },
+      "defaults": {
+        "action": "permit"
+      },
+      "config": {
+        "usg": [
+          "system-view",
+          "security-policy",
+          "rule name allow-out",
+          "source-zone {{src_zone}}",
+          "destination-zone {{dst_zone}}",
+          "action {{action}}",
+          "quit",
+          "quit"
+        ],
+        "asa": [
+          "configure terminal",
+          "access-list OUTSIDE-IN extended permit ip any any",
+          "access-group OUTSIDE-IN in interface outside",
+          "end"
+        ],
+        "secpath": [
+          "system-view",
+          "security-policy ip",
+          "rule name allow-out",
+          "source-zone {{src_zone}}",
+          "destination-zone {{dst_zone}}",
+          "action pass",
+          "quit",
+          "quit"
+        ]
+      },
+      "verify": {
+        "usg": [
+          "display security-policy rule all"
+        ],
+        "asa": [
+          "show access-list"
+        ],
+        "secpath": [
+          "display security-policy ip"
+        ]
+      },
+      "note": "照抄会全放通，生产必须补 source-address / service 限制；asa 需改 ACL 与接口名。"
+    },
+    {
+      "id": "fw.nat",
+      "category": "防火墙 NAT",
+      "title": "配置源 NAT（出网上网）",
+      "keywords": [
+        "nat",
+        "源nat",
+        "easy-ip"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [],
+        "opt": [
+          "src_zone",
+          "dst_zone"
+        ],
+        "ex": {
+          "src_zone": "trust",
+          "dst_zone": "untrust"
+        }
+      },
+      "defaults": {
+        "src_zone": "trust",
+        "dst_zone": "untrust"
+      },
+      "config": {
+        "usg": [
+          "system-view",
+          "nat-policy",
+          "rule name snat-out",
+          "source-zone {{src_zone}}",
+          "destination-zone {{dst_zone}}",
+          "action source-nat easy-ip",
+          "quit",
+          "quit"
+        ],
+        "asa": [
+          "configure terminal",
+          "object network INSIDE-NET",
+          "subnet 192.168.1.0 255.255.255.0",
+          "nat (inside,outside) dynamic interface",
+          "end"
+        ],
+        "secpath": [
+          "system-view",
+          "nat policy",
+          "rule name snat-out",
+          "source-zone {{src_zone}}",
+          "destination-zone {{dst_zone}}",
+          "action source-nat easy-ip",
+          "quit",
+          "quit"
+        ]
+      },
+      "verify": {
+        "usg": [
+          "display nat-policy rule all"
+        ],
+        "asa": [
+          "show nat"
+        ],
+        "secpath": [
+          "display nat policy"
+        ]
+      }
+    },
+    {
+      "id": "fw.object",
+      "category": "防火墙 对象",
+      "title": "创建地址对象",
+      "keywords": [
+        "object",
+        "地址组",
+        "address-set"
+      ],
+      "risk": "low",
+      "params": {
+        "req": [
+          "name",
+          "ip"
+        ],
+        "ex": {
+          "name": "Web-Server",
+          "ip": "192.168.1.10"
+        }
+      },
+      "config": {
+        "usg": [
+          "system-view",
+          "ip address-set {{name}} type object",
+          "address 0 {{ip}} mask 32",
+          "quit"
+        ],
+        "asa": [
+          "configure terminal",
+          "object network {{name}}",
+          "host {{ip}}",
+          "end"
+        ],
+        "secpath": [
+          "system-view",
+          "object-group ip address {{name}}",
+          "network host address {{ip}}",
+          "quit"
+        ]
+      },
+      "verify": {
+        "usg": [
+          "display ip address-set {{name}}"
+        ],
+        "asa": [
+          "show object network {{name}}"
+        ],
+        "secpath": [
+          "display object-group ip address {{name}}"
+        ]
+      }
+    },
+    {
+      "id": "fw.session",
+      "category": "防火墙 查看",
+      "title": "查看会话表",
+      "keywords": [
+        "session",
+        "conn",
+        "会话"
+      ],
+      "risk": "read-only",
+      "config": {
+        "usg": [
+          "display firewall session table"
+        ],
+        "asa": [
+          "show conn"
+        ],
+        "secpath": [
+          "display session table ipv4"
+        ]
+      },
+      "note": "排障第一步：先看有没有会话，判断是策略挡了还是流量没到。"
+    }
+  ]
+}

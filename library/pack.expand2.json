@@ -1,0 +1,626 @@
+{
+  "pack": "expand2",
+  "meta": {
+    "name": "扩展包 2：路由 / 安全 / 网管",
+    "version": "0.1.0",
+    "updated": "2026-11-06"
+  },
+  "commands": [
+    {
+      "id": "route.static_add",
+      "category": "路由",
+      "title": "添加静态路由",
+      "keywords": [
+        "ip route-static",
+        "ip route",
+        "静态路由"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "dest",
+          "mask",
+          "nexthop"
+        ],
+        "ex": {
+          "dest": "192.168.10.0",
+          "mask": "255.255.255.0",
+          "nexthop": "10.0.0.254"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "ip route-static {{dest}} {{mask}} {{nexthop}}",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "ip route {{dest}} {{mask}} {{nexthop}}",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "ip route-static {{dest}} {{mask}} {{nexthop}}",
+          "quit"
+        ]
+      },
+      "verify": {
+        "huawei": [
+          "display ip routing-table {{dest}}"
+        ],
+        "cisco": [
+          "show ip route {{dest}}"
+        ],
+        "h3c": [
+          "display ip routing-table {{dest}}"
+        ]
+      }
+    },
+    {
+      "id": "route.static_del",
+      "category": "路由",
+      "title": "删除静态路由",
+      "keywords": [
+        "undo ip route-static",
+        "no ip route",
+        "删除路由"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "dest",
+          "mask",
+          "nexthop"
+        ],
+        "ex": {
+          "dest": "192.168.10.0",
+          "mask": "255.255.255.0",
+          "nexthop": "10.0.0.254"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "undo ip route-static {{dest}} {{mask}} {{nexthop}}",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "no ip route {{dest}} {{mask}} {{nexthop}}",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "undo ip route-static {{dest}} {{mask}} {{nexthop}}",
+          "quit"
+        ]
+      }
+    },
+    {
+      "id": "route.default_route",
+      "category": "路由",
+      "title": "配置默认路由",
+      "keywords": [
+        "default route",
+        "默认路由",
+        "0.0.0.0"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "nexthop"
+        ],
+        "ex": {
+          "nexthop": "10.0.0.254"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "ip route-static 0.0.0.0 0.0.0.0 {{nexthop}}",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "ip route 0.0.0.0 0.0.0.0 {{nexthop}}",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "ip route-static 0.0.0.0 0.0.0.0 {{nexthop}}",
+          "quit"
+        ]
+      },
+      "verify": {
+        "huawei": [
+          "display ip routing-table 0.0.0.0"
+        ],
+        "cisco": [
+          "show ip route 0.0.0.0"
+        ],
+        "h3c": [
+          "display ip routing-table 0.0.0.0"
+        ]
+      }
+    },
+    {
+      "id": "ospf.enable_area",
+      "category": "OSPF",
+      "title": "启用 OSPF 并宣告网段",
+      "keywords": [
+        "ospf",
+        "router-id",
+        "network",
+        "area"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "pid",
+          "router_id",
+          "area",
+          "net",
+          "mask"
+        ],
+        "ex": {
+          "pid": "1",
+          "router_id": "1.1.1.1",
+          "area": "0",
+          "net": "10.0.0.0",
+          "mask": "0.0.0.255"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "ospf {{pid}} router-id {{router_id}}",
+          "area {{area}}",
+          "network {{net}} {{mask}}",
+          "quit",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "router ospf {{pid}}",
+          "router-id {{router_id}}",
+          "network {{net}} {{mask}} area {{area}}",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "ospf {{pid}} router-id {{router_id}}",
+          "area {{area}}",
+          "network {{net}} {{mask}}",
+          "quit",
+          "quit"
+        ]
+      },
+      "verify": {
+        "huawei": [
+          "display ospf peer brief"
+        ],
+        "cisco": [
+          "show ip ospf neighbor"
+        ],
+        "h3c": [
+          "display ospf peer"
+        ]
+      }
+    },
+    {
+      "id": "bgp.neighbor_add",
+      "category": "BGP",
+      "title": "配置 BGP 邻居并宣告网段",
+      "keywords": [
+        "bgp",
+        "peer",
+        "neighbor",
+        "network"
+      ],
+      "risk": "high",
+      "params": {
+        "req": [
+          "as",
+          "remote_as",
+          "peer",
+          "net",
+          "mask"
+        ],
+        "ex": {
+          "as": "65001",
+          "remote_as": "65002",
+          "peer": "10.0.0.2",
+          "net": "192.168.0.0",
+          "mask": "255.255.255.0"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "bgp {{as}}",
+          "peer {{peer}} as-number {{remote_as}}",
+          "ipv4-family unicast",
+          "network {{net}} {{mask}}",
+          "quit",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "router bgp {{as}}",
+          "neighbor {{peer}} remote-as {{remote_as}}",
+          "network {{net}} mask {{mask}}",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "bgp {{as}}",
+          "peer {{peer}} as-number {{remote_as}}",
+          "address-family ipv4 unicast",
+          "network {{net}} {{mask}}",
+          "quit",
+          "quit"
+        ]
+      },
+      "verify": {
+        "huawei": [
+          "display bgp peer"
+        ],
+        "cisco": [
+          "show bgp summary"
+        ],
+        "h3c": [
+          "display bgp peer ipv4"
+        ]
+      }
+    },
+    {
+      "id": "acl.rule_add",
+      "category": "ACL",
+      "title": "创建基础 ACL 规则",
+      "keywords": [
+        "acl",
+        "rule",
+        "permit",
+        "deny"
+      ],
+      "risk": "high",
+      "params": {
+        "req": [
+          "acl",
+          "action",
+          "ip",
+          "wildcard"
+        ],
+        "ex": {
+          "acl": "3000",
+          "action": "permit",
+          "ip": "192.168.1.0",
+          "wildcard": "0.0.0.255"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "acl number {{acl}}",
+          "rule 10 {{action}} ip source {{ip}} {{wildcard}}",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "ip access-list extended ACL-{{acl}}",
+          "{{action}} ip {{ip}} {{wildcard}} any",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "acl advanced {{acl}}",
+          "rule 10 {{action}} ip source {{ip}} {{wildcard}}",
+          "quit"
+        ]
+      },
+      "verify": {
+        "huawei": [
+          "display acl {{acl}}"
+        ],
+        "cisco": [
+          "show access-lists ACL-{{acl}}"
+        ],
+        "h3c": [
+          "display acl {{acl}}"
+        ]
+      }
+    },
+    {
+      "id": "nat.source_out",
+      "category": "NAT",
+      "title": "配置源 NAT（出接口上网）",
+      "keywords": [
+        "nat",
+        "easy-ip",
+        "pat",
+        "上网"
+      ],
+      "risk": "high",
+      "params": {
+        "req": [
+          "acl",
+          "iface"
+        ],
+        "ex": {
+          "acl": "2000",
+          "iface": "GigabitEthernet0/0/24"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "acl number {{acl}}",
+          "rule permit source any",
+          "quit",
+          "interface {{iface}}",
+          "nat outbound {{acl}}",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "interface {{iface}}",
+          "ip nat outside",
+          "exit",
+          "ip access-list standard NAT-ACL",
+          "permit any",
+          "exit",
+          "ip nat inside source list NAT-ACL interface {{iface}} overload"
+        ],
+        "h3c": [
+          "system-view",
+          "acl basic {{acl}}",
+          "rule permit source any",
+          "quit",
+          "interface {{iface}}",
+          "nat outbound {{acl}}",
+          "quit"
+        ]
+      },
+      "verify": {
+        "huawei": [
+          "display nat outbound"
+        ],
+        "cisco": [
+          "show ip nat translations"
+        ],
+        "h3c": [
+          "display nat outbound"
+        ]
+      }
+    },
+    {
+      "id": "dhcp.pool_add",
+      "category": "DHCP",
+      "title": "配置 DHCP 地址池",
+      "keywords": [
+        "dhcp",
+        "pool",
+        "地址池"
+      ],
+      "risk": "medium",
+      "params": {
+        "req": [
+          "pool",
+          "net",
+          "mask",
+          "gw"
+        ],
+        "opt": [
+          "dns"
+        ],
+        "ex": {
+          "pool": "vlan10",
+          "net": "192.168.10.0",
+          "mask": "255.255.255.0",
+          "gw": "192.168.10.1",
+          "dns": "223.5.5.5"
+        }
+      },
+      "defaults": {
+        "dns": "223.5.5.5"
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "ip pool {{pool}}",
+          "network {{net}} mask {{mask}}",
+          "gateway-list {{gw}}",
+          "dns-list {{dns}}",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "ip dhcp pool {{pool}}",
+          "network {{net}} {{mask}}",
+          "default-router {{gw}}",
+          "dns-server {{dns}}",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "dhcp server ip-pool {{pool}}",
+          "network {{net}} mask {{mask}}",
+          "gateway-list {{gw}}",
+          "dns-list {{dns}}",
+          "quit"
+        ]
+      },
+      "verify": {
+        "huawei": [
+          "display ip pool name {{pool}}"
+        ],
+        "cisco": [
+          "show ip dhcp pool {{pool}}"
+        ],
+        "h3c": [
+          "display dhcp server pool name {{pool}}"
+        ]
+      }
+    },
+    {
+      "id": "vrrp.group",
+      "category": "VRRP",
+      "title": "配置 VRRP 网关冗余",
+      "keywords": [
+        "vrrp",
+        "虚拟网关",
+        "双机"
+      ],
+      "risk": "high",
+      "params": {
+        "req": [
+          "iface",
+          "vrid",
+          "vip"
+        ],
+        "opt": [
+          "prio"
+        ],
+        "ex": {
+          "iface": "Vlanif10",
+          "vrid": "1",
+          "vip": "192.168.10.254",
+          "prio": "120"
+        }
+      },
+      "defaults": {
+        "prio": "120"
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "interface {{iface}}",
+          "vrrp vrid {{vrid}} virtual-ip {{vip}}",
+          "vrrp vrid {{vrid}} priority {{prio}}",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "interface {{iface}}",
+          "vrrp {{vrid}} ip {{vip}}",
+          "vrrp {{vrid}} priority {{prio}}",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "interface {{iface}}",
+          "vrrp vrid {{vrid}} virtual-ip {{vip}}",
+          "vrrp vrid {{vrid}} priority {{prio}}",
+          "quit"
+        ]
+      },
+      "verify": {
+        "huawei": [
+          "display vrrp brief"
+        ],
+        "cisco": [
+          "show vrrp brief"
+        ],
+        "h3c": [
+          "display vrrp"
+        ]
+      }
+    },
+    {
+      "id": "ntp.add_server",
+      "category": "管理面",
+      "title": "配置 NTP 服务器",
+      "keywords": [
+        "ntp",
+        "时间同步",
+        "时钟"
+      ],
+      "risk": "low",
+      "params": {
+        "req": [
+          "server"
+        ],
+        "ex": {
+          "server": "10.0.0.10"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "ntp-service unicast-server {{server}}",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "ntp server {{server}}",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "ntp-service unicast-server {{server}}",
+          "quit"
+        ]
+      },
+      "verify": {
+        "huawei": [
+          "display ntp-service status"
+        ],
+        "cisco": [
+          "show ntp status"
+        ],
+        "h3c": [
+          "display ntp-service status"
+        ]
+      }
+    },
+    {
+      "id": "syslog.add_host",
+      "category": "管理面",
+      "title": "配置日志服务器",
+      "keywords": [
+        "syslog",
+        "loghost",
+        "日志服务器"
+      ],
+      "risk": "low",
+      "params": {
+        "req": [
+          "server"
+        ],
+        "ex": {
+          "server": "10.0.0.11"
+        }
+      },
+      "config": {
+        "huawei": [
+          "system-view",
+          "info-center loghost {{server}}",
+          "quit"
+        ],
+        "cisco": [
+          "configure terminal",
+          "logging host {{server}}",
+          "logging trap informational",
+          "end"
+        ],
+        "h3c": [
+          "system-view",
+          "info-center loghost {{server}}",
+          "quit"
+        ]
+      },
+      "verify": {
+        "huawei": [
+          "display info-center"
+        ],
+        "cisco": [
+          "show logging"
+        ],
+        "h3c": [
+          "display info-center"
+        ]
+      }
+    }
+  ]
+}

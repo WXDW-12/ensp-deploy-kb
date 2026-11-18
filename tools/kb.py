@@ -167,8 +167,18 @@ def cmd_push(msg):
     rc, out = git("commit", "-m", msg or ("更新知识库 " + datetime.now().strftime("%Y-%m-%d %H:%M")))
     print(out or "无改动")
     rc2, out2 = git("push")
-    print(out2 or "已推送（若首次推送请先 git push -u origin main）")
-    return 0
+    if rc2 == 0:
+        print(out2 or "已推送")
+        return 0
+    # github.com:443 不通时走 API 上传
+    print("git push 失败，改用 GitHub API 上传 ...")
+    import subprocess as sp
+    r = sp.run([sys.executable, os.path.join(ROOT, "tools", "gh_upload.py"),
+                "--repo", "WXDW-12/ensp-deploy-kb", "--branch", "main",
+                "--message", msg or "更新知识库"], cwd=ROOT)
+    if r.returncode != 0:
+        print("API 上传也失败：检查 GH_TOKEN 环境变量和网络")
+    return r.returncode
 
 
 def main():

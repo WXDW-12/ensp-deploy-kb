@@ -1,0 +1,288 @@
+{
+  "pack": "routing",
+  "meta": {
+    "name": "路由与网关协议扩展包",
+    "version": "0.1.0",
+    "updated": "2026-11-05"
+  },
+  "commands": [
+    {
+      "id": "ospf.area-stub",
+      "category": "OSPF",
+      "title": "配置 OSPF Stub 区域",
+      "keywords": ["ospf", "stub", "末梢区域", "区域"],
+      "risk": "medium",
+      "params": {"req": ["pid", "area"]},
+      "config": {
+        "huawei": ["system-view", "ospf {{pid}}", "area {{area}}", "stub", "quit", "quit"],
+        "cisco": ["configure terminal", "router ospf {{pid}}", "area {{area}} stub", "end"],
+        "h3c": ["system-view", "ospf {{pid}}", "area {{area}}", "stub", "quit", "quit"]
+      },
+      "note": "Stub 区域禁止 Type 5 LSA，边界必须配置 default-route-advertise，否则区域内无默认路由。"
+    },
+    {
+      "id": "ospf.nssa",
+      "category": "OSPF",
+      "title": "配置 OSPF NSSA 区域",
+      "keywords": ["ospf", "nssa", "非完全末梢", "区域"],
+      "risk": "medium",
+      "params": {"req": ["pid", "area"]},
+      "config": {
+        "huawei": ["system-view", "ospf {{pid}}", "area {{area}}", "nssa", "quit", "quit"],
+        "cisco": ["configure terminal", "router ospf {{pid}}", "area {{area}} nssa", "end"],
+        "h3c": ["system-view", "ospf {{pid}}", "area {{area}}", "nssa", "quit", "quit"]
+      },
+      "note": "区域内两端的 stub/nssa 属性必须一致，否则 Hello 报文不匹配、邻居起不来。"
+    },
+    {
+      "id": "ospf.cost",
+      "category": "OSPF",
+      "title": "设置接口 OSPF 开销",
+      "keywords": ["ospf", "cost", "开销", "选路", "metric"],
+      "risk": "medium",
+      "params": {"req": ["iface", "cost"]},
+      "config": {
+        "huawei": ["system-view", "interface {{iface}}", "ospf cost {{cost}}", "quit"],
+        "cisco": ["configure terminal", "interface {{iface}}", "ip ospf cost {{cost}}", "end"],
+        "h3c": ["system-view", "interface {{iface}}", "ospf cost {{cost}}", "quit"]
+      }
+    },
+    {
+      "id": "ospf.timers",
+      "category": "OSPF",
+      "title": "调整 OSPF Hello/Dead 定时器",
+      "keywords": ["ospf", "hello", "dead", "定时器", "timer"],
+      "risk": "high",
+      "params": {"req": ["iface", "hello"], "opt": ["dead"]},
+      "config": {
+        "huawei": ["system-view", "interface {{iface}}", "ospf timer hello {{hello}}", "[[ ospf timer dead {{dead}}]]", "quit"],
+        "cisco": ["configure terminal", "interface {{iface}}", "ip ospf hello-interval {{hello}}", "[[ ip ospf dead-interval {{dead}}]]", "end"],
+        "h3c": ["system-view", "interface {{iface}}", "ospf timer hello {{hello}}", "[[ ospf timer dead {{dead}}]]", "quit"]
+      },
+      "note": "两端 hello/dead 必须一致，否则邻居震荡。dead 默认是 hello 的 4 倍。"
+    },
+    {
+      "id": "ospf.auth",
+      "category": "OSPF",
+      "title": "配置 OSPF 区域 MD5 认证",
+      "keywords": ["ospf", "认证", "md5", "authentication", "安全"],
+      "risk": "high",
+      "params": {"req": ["pid", "area", "iface", "keyid", "pwd"]},
+      "config": {
+        "huawei": ["system-view", "ospf {{pid}}", "area {{area}}", "authentication-mode md5", "quit", "quit",
+                   "interface {{iface}}", "ospf authentication-mode md5 {{keyid}} cipher {{pwd}}", "quit"],
+        "cisco": ["configure terminal", "interface {{iface}}", "ip ospf message-digest-key {{keyid}} md5 {{pwd}}", "exit",
+                  "router ospf {{pid}}", "area {{area}} authentication message-digest", "end"],
+        "h3c": ["system-view", "ospf {{pid}}", "area {{area}}", "authentication-mode md5", "quit", "quit",
+                "interface {{iface}}", "ospf authentication-mode md5 {{keyid}} cipher {{pwd}}", "quit"]
+      },
+      "note": "认证不匹配会直接导致邻居断开，务必两端同时修改或选在维护窗口。"
+    },
+    {
+      "id": "ospf.import",
+      "category": "OSPF",
+      "title": "OSPF 引入外部路由",
+      "keywords": ["ospf", "import-route", "引入", "重分发", "redistribute"],
+      "risk": "medium",
+      "params": {"req": ["pid", "proto"], "ex": {"proto": "static"}},
+      "config": {
+        "huawei": ["system-view", "ospf {{pid}}", "import-route {{proto}}", "quit", "quit"],
+        "cisco": ["configure terminal", "router ospf {{pid}}", "redistribute {{proto}} subnets", "end"],
+        "h3c": ["system-view", "ospf {{pid}}", "import-route {{proto}}", "quit", "quit"]
+      },
+      "note": "思科必须带 subnets，否则只重分发主类网络；引入前建议配 route-policy 过滤。"
+    },
+    {
+      "id": "ospf.default-originate",
+      "category": "OSPF",
+      "title": "OSPF 下发默认路由",
+      "keywords": ["ospf", "默认路由", "default-information", "default-route-advertise"],
+      "risk": "medium",
+      "params": {"req": ["pid"]},
+      "config": {
+        "huawei": ["system-view", "ospf {{pid}}", "default-route-advertise", "quit", "quit"],
+        "cisco": ["configure terminal", "router ospf {{pid}}", "default-information originate", "end"],
+        "h3c": ["system-view", "ospf {{pid}}", "default-route-advertise", "quit", "quit"]
+      }
+    },
+    {
+      "id": "isis.enable",
+      "category": "IS-IS",
+      "title": "启用 IS-IS 进程与 NET 地址",
+      "keywords": ["isis", "is-is", "net", "network-entity", "中间系统"],
+      "risk": "medium",
+      "params": {"req": ["pid", "net"], "opt": ["level"], "ex": {"net": "49.0001.0000.0000.0001.00"}},
+      "config": {
+        "huawei": ["system-view", "isis {{pid}}", "is-level {{level}}", "network-entity {{net}}", "quit"],
+        "cisco": ["configure terminal", "router isis {{pid}}", "is-type {{level}}", "net {{net}}", "end"],
+        "h3c": ["system-view", "isis {{pid}}", "is-level {{level}}", "network-entity {{net}}", "quit"]
+      },
+      "note": "level 取值厂商不同：华为/华三 level-1|level-1-2|level-2，思科 level-1|level-1-2|level-2-only。不填用默认 level-1-2。"
+    },
+    {
+      "id": "isis.iface",
+      "category": "IS-IS",
+      "title": "接口启用 IS-IS 并设置开销",
+      "keywords": ["isis", "接口", "cost", "circuit-type"],
+      "risk": "medium",
+      "params": {"req": ["iface"], "opt": ["pid", "cost", "circuit"], "ex": {"pid": "1", "cost": "10"}},
+      "defaults": {"pid": "1", "cost": "10"},
+      "config": {
+        "huawei": ["system-view", "interface {{iface}}", "isis enable {{pid}}", "isis cost {{cost}}", "isis circuit-type {{circuit}}", "quit"],
+        "cisco": ["configure terminal", "interface {{iface}}", "ip router isis {{pid}}", "isis metric {{cost}}", "isis circuit-type {{circuit}}", "end"],
+        "h3c": ["system-view", "interface {{iface}}", "isis enable {{pid}}", "isis cost {{cost}}", "isis circuit-type {{circuit}}", "quit"]
+      },
+      "note": "circuit-type 取值：华为/华三 p2p|broadcast，思科 level-1|level-2|level-1-2。不填则按默认广播网。"
+    },
+    {
+      "id": "isis.import",
+      "category": "IS-IS",
+      "title": "IS-IS 引入外部路由",
+      "keywords": ["isis", "import-route", "引入", "重分发"],
+      "risk": "medium",
+      "params": {"req": ["pid", "proto"], "ex": {"proto": "static"}},
+      "config": {
+        "huawei": ["system-view", "isis {{pid}}", "import-route {{proto}}", "quit"],
+        "cisco": ["configure terminal", "router isis {{pid}}", "redistribute {{proto}}", "end"],
+        "h3c": ["system-view", "isis {{pid}}", "import-route {{proto}}", "quit"]
+      }
+    },
+    {
+      "id": "show.isis",
+      "category": "IS-IS",
+      "title": "查看 IS-IS 邻居",
+      "keywords": ["isis", "邻居", "peer", "排障"],
+      "risk": "read-only",
+      "params": {"req": [], "opt": []},
+      "config": {
+        "huawei": ["display isis peer"],
+        "cisco": ["show isis neighbors"],
+        "h3c": ["display isis peer"]
+      }
+    },
+    {
+      "id": "bgp.enable",
+      "category": "BGP",
+      "title": "启用 BGP 进程",
+      "keywords": ["bgp", "自治系统", "as", "router-id"],
+      "risk": "medium",
+      "params": {"req": ["as"], "opt": ["rid"]},
+      "config": {
+        "huawei": ["system-view", "bgp {{as}}", "router-id {{rid}}", "quit"],
+        "cisco": ["configure terminal", "router bgp {{as}}", "bgp router-id {{rid}}", "end"],
+        "h3c": ["system-view", "bgp {{as}}", "router-id {{rid}}", "quit"]
+      },
+      "note": "router-id 建议手工指定为 Loopback 地址，否则按接口地址选举，重启后可能变化。"
+    },
+    {
+      "id": "bgp.neighbor",
+      "category": "BGP",
+      "title": "配置 BGP 邻居",
+      "keywords": ["bgp", "邻居", "peer", "neighbor", "对等体"],
+      "risk": "medium",
+      "params": {"req": ["as", "peer", "remote_as"], "opt": ["src", "desc"]},
+      "config": {
+        "huawei": ["system-view", "bgp {{as}}", "peer {{peer}} as-number {{remote_as}}", "peer {{peer}} connect-interface {{src}}", "peer {{peer}} description {{desc}}", "quit"],
+        "cisco": ["configure terminal", "router bgp {{as}}", "neighbor {{peer}} remote-as {{remote_as}}", "neighbor {{peer}} update-source {{src}}", "neighbor {{peer}} description {{desc}}", "end"],
+        "h3c": ["system-view", "bgp {{as}}", "peer {{peer}} as-number {{remote_as}}", "peer {{peer}} connect-interface {{src}}", "peer {{peer}} description {{desc}}", "quit"]
+      },
+      "note": "通过 Loopback 建邻必须配 connect-interface/update-source，且对端要有到该地址的路由。"
+    },
+    {
+      "id": "bgp.network",
+      "category": "BGP",
+      "title": "BGP 宣告网段",
+      "keywords": ["bgp", "network", "宣告", "发布路由"],
+      "risk": "medium",
+      "params": {"req": ["as", "net", "mask"], "ex": {"net": "10.10.10.0", "mask": "24"}},
+      "config": {
+        "huawei": ["system-view", "bgp {{as}}", "network {{net}} {{mask}}", "quit"],
+        "cisco": ["configure terminal", "router bgp {{as}}", "network {{net}} mask {{mask}}", "end"],
+        "h3c": ["system-view", "bgp {{as}}", "network {{net}} {{mask}}", "quit"]
+      },
+      "note": "mask 格式不同：华为/华三填前缀长度 24，思科填点分掩码 255.255.255.0。且必须存在精确匹配的路由才会宣告。"
+    },
+    {
+      "id": "bgp.import",
+      "category": "BGP",
+      "title": "BGP 引入 IGP 路由",
+      "keywords": ["bgp", "import-route", "引入", "重分发"],
+      "risk": "medium",
+      "params": {"req": ["as", "proto"], "ex": {"proto": "ospf 1"}},
+      "config": {
+        "huawei": ["system-view", "bgp {{as}}", "import-route {{proto}}", "quit"],
+        "cisco": ["configure terminal", "router bgp {{as}}", "redistribute {{proto}}", "end"],
+        "h3c": ["system-view", "bgp {{as}}", "import-route {{proto}}", "quit"]
+      },
+      "note": "全量引入风险极高，生产环境应配合 route-policy/prefix-list 精确控制。"
+    },
+    {
+      "id": "bgp.next-hop-self",
+      "category": "BGP",
+      "title": "设置 next-hop-self",
+      "keywords": ["bgp", "下一跳", "next-hop-self", "ibgp"],
+      "risk": "medium",
+      "params": {"req": ["as", "peer"]},
+      "config": {
+        "huawei": ["system-view", "bgp {{as}}", "peer {{peer}} next-hop-local", "quit"],
+        "cisco": ["configure terminal", "router bgp {{as}}", "neighbor {{peer}} next-hop-self", "end"],
+        "h3c": ["system-view", "bgp {{as}}", "peer {{peer}} next-hop-local", "quit"]
+      },
+      "note": "IBGP 邻居若中间设备没有到原始下一跳的路由，路由会被丢弃；此命令把下一跳改为自己。"
+    },
+    {
+      "id": "show.bgp",
+      "category": "BGP",
+      "title": "查看 BGP 邻居状态",
+      "keywords": ["bgp", "邻居状态", "peer", "summary", "排障"],
+      "risk": "read-only",
+      "params": {"req": [], "opt": []},
+      "config": {
+        "huawei": ["display bgp peer"],
+        "cisco": ["show ip bgp summary"],
+        "h3c": ["display bgp peer"]
+      }
+    },
+    {
+      "id": "vrrp.create",
+      "category": "VRRP",
+      "title": "配置 VRRP 虚拟网关",
+      "keywords": ["vrrp", "虚拟网关", "网关冗余", "双机热备", "高可用"],
+      "risk": "high",
+      "params": {"req": ["iface", "vrid", "vip"], "opt": ["prio", "delay"], "ex": {"prio": "120", "delay": "20"}},
+      "config": {
+        "huawei": ["system-view", "interface {{iface}}", "vrrp vrid {{vrid}} virtual-ip {{vip}}", "vrrp vrid {{vrid}} priority {{prio}}", "vrrp vrid {{vrid}} preempt-mode timer delay {{delay}}", "quit"],
+        "cisco": ["configure terminal", "interface {{iface}}", "vrrp {{vrid}} ip {{vip}}", "vrrp {{vrid}} priority {{prio}}", "vrrp {{vrid}} preempt delay minimum {{delay}}", "end"],
+        "h3c": ["system-view", "interface {{iface}}", "vrrp vrid {{vrid}} virtual-ip {{vip}}", "vrrp vrid {{vrid}} priority {{prio}}", "vrrp vrid {{vrid}} preempt-mode delay {{delay}}", "quit"]
+      },
+      "note": "虚拟 IP 必须与接口同网段；优先级默认 100，越大越优先；不填 prio 时将使用厂商默认值（对应行自动省略）。"
+    },
+    {
+      "id": "vrrp.track",
+      "category": "VRRP",
+      "title": "配置 VRRP 上行链路跟踪",
+      "keywords": ["vrrp", "track", "跟踪", "上行链路", "切换"],
+      "risk": "high",
+      "params": {"req": ["iface", "vrid", "track_iface", "reduced"], "ex": {"reduced": "30"}},
+      "config": {
+        "huawei": ["system-view", "interface {{iface}}", "vrrp vrid {{vrid}} track interface {{track_iface}} reduced {{reduced}}", "quit"],
+        "cisco": ["configure terminal", "track 1 interface {{track_iface}} line-protocol", "interface {{iface}}", "vrrp {{vrid}} track 1 decrement {{reduced}}", "end"],
+        "h3c": ["system-view", "interface {{iface}}", "vrrp vrid {{vrid}} track interface {{track_iface}} reduced {{reduced}}", "quit"]
+      },
+      "note": "跟踪上行口 down 后降低优先级，触发主备切换。reduced 要大于主备优先级差。"
+    },
+    {
+      "id": "show.vrrp",
+      "category": "VRRP",
+      "title": "查看 VRRP 状态",
+      "keywords": ["vrrp", "状态", "主备", "master", "backup"],
+      "risk": "read-only",
+      "params": {"req": [], "opt": []},
+      "config": {
+        "huawei": ["display vrrp"],
+        "cisco": ["show vrrp"],
+        "h3c": ["display vrrp"]
+      }
+    }
+  ]
+}
