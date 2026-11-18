@@ -69,6 +69,10 @@ def main():
     ap.add_argument("--branch", default="main")
     ap.add_argument("--message", default="更新知识库")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--only", default="all",
+                    help="只上传指定前缀，逗号分隔，如 problems/,sync/issues.json")
+    ap.add_argument("--keep-remote", action="store_true",
+                    help="增量上传：以远端现有 tree 为 base_tree，保留本次未上传的远端文件")
     a = ap.parse_args()
 
     token = os.environ.get("GH_TOKEN") or ""
@@ -77,6 +81,9 @@ def main():
         return 1
 
     files = collect()
+    if a.only and a.only != "all":
+        prefixes = tuple(x.strip() for x in a.only.split(",") if x.strip())
+        files = [(r, p) for r, p in files if r.startswith(prefixes)]
     print("待上传文件: %d 个" % len(files))
     if a.dry_run:
         for rel, _ in files:
@@ -86,13 +93,19 @@ def main():
     # 空仓库：Git Data API 无法建 blob，先用 Contents API 建首个提交
     try:
         api("GET", "/repos/%s/git/ref/heads/%s" % (a.repo, a.branch), token)
-    except RuntimeError:
-        print("仓库为空，先用 README 建初始提交...")
+    except RuntimeError as _e:
+        print("读取分支失败（%s），尝试按空仓库初始化..." % str(_e)[:60])
         readme = os.path.join(ROOT, "README.md")
         content = base64.b64encode(open(readme, "rb").read()).decode()
-        api("PUT", "/repos/%s/contents/README.md" % a.repo, token, {
-            "message": a.message, "content": content, "branch": a.branch})
-        print("初始提交已创建")
+        try:
+            api("PUT", "/repos/%s/contents/README.md" % a.repo, token, {
+                "message": a.message, "content": content, "branch": a.branch})
+            print("初始提交已创建")
+        except RuntimeError as e:
+            if "422" in str(e):
+                print("仓库已有内容，跳过初始提交")
+            else:
+                raise
 
     tree = []
     for rel, path in files:
@@ -103,7 +116,19 @@ def main():
         tree.append({"path": rel, "mode": "100644", "type": "blob", "sha": blob["sha"]})
         print("  blob OK:", rel)
 
-    new_tree = api("POST", "/repos/%s/git/trees" % a.repo, token, {"tree": tree})
+    payload = {"tree": tree}
+    if a.keep_remote:
+        base = None
+        try:
+            ref0 = api("GET", "/repos/%s/git/ref/heads/%s" % (a.repo, a.branch), token)
+            commit0 = api("GET", "/repos/%s/git/commits/%s" % (a.repo, ref0["object"]["sha"]), token)
+            base = commit0["tree"]["sha"]
+        except RuntimeError as _e:
+            print("读取远端 base_tree 失败（%s），回退为全量 tree" % str(_e)[:60])
+        if base:
+            payload["base_tree"] = base
+            print("增量模式：base_tree=%s（远端其他文件保留）" % base[:10])
+    new_tree = api("POST", "/repos/%s/git/trees" % a.repo, token, payload)
 
     # 已有分支则带上 parent，保留历史
     parents = []
